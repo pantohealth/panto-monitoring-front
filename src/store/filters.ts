@@ -1,11 +1,15 @@
 import { atom } from 'jotai';
 
-interface FilterState {
+export interface FilterState {
   fromDateTime: string;
   toDateTime: string;
+  exactDateTime: string;
+  isExactSearch: boolean;
 }
 
 export const filterAtom = atom<FilterState>({
   fromDateTime: '',
   toDateTime: '',
+  exactDateTime: '',
+  isExactSearch: false,
 });
