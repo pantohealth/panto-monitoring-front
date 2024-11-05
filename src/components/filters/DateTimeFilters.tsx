@@ -1,9 +1,9 @@
-import React from 'react';
+import { useState } from 'react';
 import { useAtom } from 'jotai';
 import { filterAtom, type FilterState } from '@/store/filters';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Search, Download, Clock } from 'lucide-react';
+import { Search, Download, Clock, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface DateTimeFiltersProps {
@@ -13,6 +13,7 @@ interface DateTimeFiltersProps {
 
 export function DateTimeFilters({ onExport, onSearch }: DateTimeFiltersProps) {
   const [filters, setFilters] = useAtom(filterAtom);
+  const [hasSearched, setHasSearched] = useState(false);
 
   const handleSearch = () => {
     if (filters.isExactSearch && !filters.exactDateTime) {
@@ -21,9 +22,12 @@ export function DateTimeFilters({ onExport, onSearch }: DateTimeFiltersProps) {
     }
 
     if (!filters.isExactSearch && !filters.fromDateTime && !filters.toDateTime) {
-      toast.info('Showing all records as no date range specified');
+      toast('Showing all records as no date range specified', {
+        icon: 'ℹ️',
+      });
     }
 
+    setHasSearched(true);
     onSearch(filters);
   };
 
@@ -31,16 +35,45 @@ export function DateTimeFilters({ onExport, onSearch }: DateTimeFiltersProps) {
     setFilters(prev => ({
       ...prev,
       isExactSearch: !prev.isExactSearch,
-      // Reset fields when switching modes
       fromDateTime: '',
       toDateTime: '',
       exactDateTime: ''
     }));
+    setHasSearched(false);
   };
+
+  const clearDates = () => {
+    setFilters(prev => ({
+      ...prev,
+      fromDateTime: '',
+      toDateTime: '',
+      exactDateTime: ''
+    }));
+    onSearch({
+      ...filters,
+      fromDateTime: '',
+      toDateTime: '',
+      exactDateTime: ''
+    });
+    setHasSearched(false);
+  };
+
+  const hasDateSelected = hasSearched && (filters.fromDateTime || filters.toDateTime || filters.exactDateTime);
 
   return (
     <div className="bg-white p-4 rounded-lg shadow mb-6">
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end mb-4 gap-2">
+        {hasDateSelected && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearDates}
+            className="text-sm text-red-600 hover:text-red-700"
+          >
+            <X className="w-4 h-4 mr-2" />
+            Clear Dates
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="sm"
