@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DateTimeFilters } from '@/components/filters/DateTimeFilters';
@@ -58,7 +58,11 @@ export function UsersPage() {
   const [isCompanyDropdownOpen, setIsCompanyDropdownOpen] = useState(false);
   const [filteredUsers, setFilteredUsers] = useState(MOCK_USERS);
 
-  const handleSearch = (filters: FilterState) => {
+  useEffect(() => {
+    handleSearch();
+  }, [selectedUser, selectedCompany]);
+
+  const handleSearch = () => {
     let filtered = MOCK_USERS;
 
     if (selectedUser) {
