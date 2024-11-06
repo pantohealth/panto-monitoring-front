@@ -104,7 +104,7 @@ export function CompanyPage() {
             </button>
             {isDropdownOpen && (
               <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg">
-                <div className="py-1">
+                <div className="py-1 max-h-40 overflow-y-auto">
                   <button
                     onClick={() => handleCompanySelect('')}
                     className={cn(
