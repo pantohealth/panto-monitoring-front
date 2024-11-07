@@ -7,6 +7,9 @@ import { DevicesPage } from './pages/Devices';
 import { CompanyPage } from './pages/Company';
 import { HealthPage } from './pages/Health';
 import { WarningsPage } from './pages/Warnings';
+import { ServerLogPage } from './pages/widgets/ServerLog';
+import { TrainDevicePage } from './pages/widgets/TrainDevice';
+import { AddUserPage } from './pages/settings/AddUser';
 
 function App() {
   return (
@@ -21,8 +24,11 @@ function App() {
             <Route path="company" element={<CompanyPage />} />
             <Route path="health" element={<HealthPage />} />
             <Route path="warnings" element={<WarningsPage />} />
+            <Route path="widgets/server-log" element={<ServerLogPage />} />
+            <Route path="widgets/train-device" element={<TrainDevicePage />} />
+            <Route path="settings/add-user" element={<AddUserPage />} />
           </Route>
-          <Route path="/" element={<Navigate to="/dashboard/users" replace />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>
       <Toaster position="top-right" />

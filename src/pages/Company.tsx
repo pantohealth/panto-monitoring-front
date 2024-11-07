@@ -1,8 +1,7 @@
-import { useState } from 'react';
-import { DateTimeFilters } from '@/components/filters/DateTimeFilters';
-import { exportToPDF } from '@/utils/export';
-import { ChevronDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useEffect, useState } from 'react';
+import { DateTimeFilters } from '../components/filters/DateTimeFilters';
+import { exportToPDF } from '../utils/export';
+import { Dropdown } from '../components/ui/Dropdown';
 
 const AVAILABLE_COMPANIES = [
   'Railway Corp',
@@ -82,6 +81,10 @@ export function CompanyPage() {
     }
   };
 
+  useEffect(() => {
+    handleCompanySelect(selectedCompany);
+  }, [selectedCompany]);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -90,46 +93,16 @@ export function CompanyPage() {
 
       <DateTimeFilters onExport={handleExport} onSearch={() => {}} />
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="p-4 border-b border-gray-200">
-          <div className="relative w-64">
-            <button
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="w-full px-4 py-2 text-left bg-white border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <span className="flex items-center justify-between">
-                {selectedCompany || 'Select Company'}
-                <ChevronDown className="w-4 h-4" />
-              </span>
-            </button>
-            {isDropdownOpen && (
-              <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg">
-                <div className="py-1 max-h-40 overflow-y-auto">
-                  <button
-                    onClick={() => handleCompanySelect('')}
-                    className={cn(
-                      'block w-full px-4 py-2 text-left hover:bg-gray-100',
-                      !selectedCompany && 'bg-gray-50'
-                    )}
-                  >
-                    All Companies
-                  </button>
-                  {AVAILABLE_COMPANIES.map((company) => (
-                    <button
-                      key={company}
-                      onClick={() => handleCompanySelect(company)}
-                      className={cn(
-                        'block w-full px-4 py-2 text-left hover:bg-gray-100',
-                        selectedCompany === company && 'bg-gray-50'
-                      )}
-                    >
-                      {company}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+      <div className="bg-white shadow rounded-lg">
+      <div className="p-4 border-b border-gray-200 flex gap-4">
+          <Dropdown
+            value={selectedCompany}
+            onChange={setSelectedCompany}
+            options={AVAILABLE_COMPANIES}
+            placeholder="Select Company"
+            isOpen={isDropdownOpen}
+            onToggle={() => setIsDropdownOpen(!isDropdownOpen)}
+          />
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">

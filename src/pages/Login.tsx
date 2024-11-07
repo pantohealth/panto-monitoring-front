@@ -1,8 +1,7 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Button } from '../components/ui/Button';
 import { Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 

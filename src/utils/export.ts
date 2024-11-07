@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import { format } from 'date-fns';
+import * as XLSX from 'xlsx';
 
 export function exportToPDF(title: string, data: any[], columns: string[]) {
   const doc = new jsPDF();
@@ -22,4 +23,20 @@ export function exportToPDF(title: string, data: any[], columns: string[]) {
   
   // Save the PDF
   doc.save(`${title.toLowerCase().replace(/\s+/g, '-')}-${format(new Date(), 'yyyy-MM-dd-HH-mm')}.pdf`);
+}
+
+export function exportToExcel(title: string, data: any[], columns: string[]) {
+  // Create a new workbook
+  const wb = XLSX.utils.book_new();
+  
+  // Convert data to worksheet format
+  const ws = XLSX.utils.json_to_sheet(data, {
+    header: columns
+  });
+  
+  // Add the worksheet to the workbook
+  XLSX.utils.book_append_sheet(wb, ws, 'Data');
+  
+  // Generate Excel file
+  XLSX.writeFile(wb, `${title.toLowerCase().replace(/\s+/g, '-')}-${format(new Date(), 'yyyy-MM-dd-HH-mm')}.xlsx`);
 }

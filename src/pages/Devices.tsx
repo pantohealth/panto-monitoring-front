@@ -1,8 +1,7 @@
-import { useState } from 'react';
-import { DateTimeFilters } from '@/components/filters/DateTimeFilters';
-import { exportToPDF } from '@/utils/export';
-import { ChevronDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useEffect, useState } from 'react';
+import { DateTimeFilters } from '../components/filters/DateTimeFilters';
+import { exportToPDF } from '../utils/export';
+import { Dropdown } from '../components/ui/Dropdown';
 
 const AVAILABLE_DEVICES = [
   'Device A',
@@ -39,6 +38,10 @@ export function DevicesPage() {
     }
   };
 
+  useEffect(() => {
+    handleDeviceSelect(selectedDevice);
+  }, [selectedDevice]);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -47,47 +50,18 @@ export function DevicesPage() {
 
       <DateTimeFilters onExport={handleExport} onSearch={() => {}} />
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="p-4 border-b border-gray-200">
-          <div className="relative w-64">
-            <button
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="w-full px-4 py-2 text-left bg-white border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <span className="flex items-center justify-between">
-                {selectedDevice || 'Select Device'}
-                <ChevronDown className="w-4 h-4" />
-              </span>
-            </button>
-            {isDropdownOpen && (
-              <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg">
-                <div className="py-1 max-h-40 overflow-y-auto">
-                  <button
-                    onClick={() => handleDeviceSelect('')}
-                    className={cn(
-                      'block w-full px-4 py-2 text-left hover:bg-gray-100',
-                      !selectedDevice && 'bg-gray-50'
-                    )}
-                  >
-                    All Devices
-                  </button>
-                  {AVAILABLE_DEVICES.map((device) => (
-                    <button
-                      key={device}
-                      onClick={() => handleDeviceSelect(device)}
-                      className={cn(
-                        'block w-full px-4 py-2 text-left hover:bg-gray-100',
-                        selectedDevice === device && 'bg-gray-50'
-                      )}
-                    >
-                      {device}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+      <div className="bg-white shadow rounded-lg">
+      <div className="p-4 border-b border-gray-200 flex gap-4">
+          <Dropdown
+            value={selectedDevice}
+            onChange={setSelectedDevice}
+            options={AVAILABLE_DEVICES}
+            placeholder="Select Device"
+            isOpen={isDropdownOpen}
+            onToggle={() => setIsDropdownOpen(!isDropdownOpen)}
+          />
         </div>
+        
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">

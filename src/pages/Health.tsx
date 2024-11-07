@@ -1,6 +1,5 @@
-import React from 'react';
-import { DateTimeFilters } from '@/components/filters/DateTimeFilters';
-import { exportToPDF } from '@/utils/export';
+import { DateTimeFilters } from '../components/filters/DateTimeFilters';
+import { exportToPDF } from '../utils/export';
 
 const MOCK_HEALTH = [
   { id: 1, metric: 'CPU Usage', value: '45%', status: 'Normal', timestamp: '2024-03-15 10:30:00' },

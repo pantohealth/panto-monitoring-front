@@ -1,6 +1,5 @@
-import React from 'react';
-import { DateTimeFilters } from '@/components/filters/DateTimeFilters';
-import { exportToPDF } from '@/utils/export';
+import { DateTimeFilters } from '../components/filters/DateTimeFilters';
+import { exportToPDF } from '../utils/export';
 
 const MOCK_WARNINGS = [
   { id: 1, type: 'System', message: 'High CPU Usage', severity: 'Warning', timestamp: '2024-03-15 10:30:00' },

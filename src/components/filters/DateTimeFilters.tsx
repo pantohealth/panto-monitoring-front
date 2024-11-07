@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import { useAtom } from 'jotai';
-import { filterAtom, type FilterState } from '@/store/filters';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Search, Download, Clock, X } from 'lucide-react';
+import { filterAtom, type FilterState } from '../../store/filters';
+import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
+import { Search, Download, FileSpreadsheet, Clock, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface DateTimeFiltersProps {
   onExport: () => void;
+  onExportExcel: () => void;
   onSearch: (filters: FilterState) => void;
 }
 
-export function DateTimeFilters({ onExport, onSearch }: DateTimeFiltersProps) {
+export function DateTimeFilters({ onExport, onExportExcel, onSearch }: DateTimeFiltersProps) {
   const [filters, setFilters] = useAtom(filterAtom);
   const [hasSearched, setHasSearched] = useState(false);
 
@@ -85,7 +86,7 @@ export function DateTimeFilters({ onExport, onSearch }: DateTimeFiltersProps) {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {filters.isExactSearch ? (
           <div className="md:col-span-2">
             <Input
@@ -137,7 +138,14 @@ export function DateTimeFilters({ onExport, onSearch }: DateTimeFiltersProps) {
             onClick={onExport}
           >
             <Download className="w-4 h-4 mr-2" />
-            Export
+            PDF
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={onExportExcel}
+          >
+            <FileSpreadsheet className="w-4 h-4 mr-2" />
+            Excel
           </Button>
         </div>
       </div>

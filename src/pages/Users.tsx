@@ -1,11 +1,23 @@
 import { useEffect, useState } from 'react';
-import { ChevronDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { DateTimeFilters } from '@/components/filters/DateTimeFilters';
-import { exportToPDF } from '@/utils/export';
-import type { FilterState } from '@/store/filters';
+import { DateTimeFilters } from '../components/filters/DateTimeFilters';
+import { exportToPDF, exportToExcel } from '../utils/export';
+import { Dropdown } from '../components/ui/Dropdown';
 
-const MOCK_USERS = [
+interface UserDetails {
+  lastLogin: string;
+  activityCount: number;
+  videoRequests: number;
+  simulationRuns: number;
+}
+
+interface User {
+  id: number;
+  name: string;
+  company: string;
+  details: UserDetails;
+}
+
+const MOCK_USERS: User[] = [
   { 
     id: 1, 
     name: 'John Doe', 
@@ -56,7 +68,7 @@ export function UsersPage() {
   const [selectedCompany, setSelectedCompany] = useState<string>('');
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isCompanyDropdownOpen, setIsCompanyDropdownOpen] = useState(false);
-  const [filteredUsers, setFilteredUsers] = useState(MOCK_USERS);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>(MOCK_USERS);
 
   useEffect(() => {
     handleSearch();
@@ -76,7 +88,7 @@ export function UsersPage() {
     setFilteredUsers(filtered);
   };
 
-  const handleExport = () => {
+  const handleExportPDF = () => {
     const exportData = filteredUsers.map(user => ({
       name: user.name,
       company: user.company,
@@ -89,6 +101,19 @@ export function UsersPage() {
     exportToPDF('User Activity Report', exportData, ['name', 'company', 'lastLogin', 'activityCount', 'videoRequests', 'simulationRuns']);
   };
 
+  const handleExportExcel = () => {
+    const exportData = filteredUsers.map(user => ({
+      name: user.name,
+      company: user.company,
+      lastLogin: new Date(user.details.lastLogin).toLocaleString(),
+      activityCount: user.details.activityCount,
+      videoRequests: user.details.videoRequests,
+      simulationRuns: user.details.simulationRuns
+    }));
+
+    exportToExcel('User Activity Report', exportData, ['name', 'company', 'lastLogin', 'activityCount', 'videoRequests', 'simulationRuns']);
+  };
+
   const uniqueUsers = Array.from(new Set(MOCK_USERS.map(user => user.name)));
 
   return (
@@ -97,105 +122,30 @@ export function UsersPage() {
         <h1 className="text-2xl font-semibold text-gray-900">User Management</h1>
       </div>
       
-      <DateTimeFilters onExport={handleExport} onSearch={handleSearch} />
+      <DateTimeFilters 
+        onExport={handleExportPDF}
+        onExportExcel={handleExportExcel}
+        onSearch={handleSearch} 
+      />
       
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="bg-white shadow rounded-lg ">
         <div className="p-4 border-b border-gray-200 flex gap-4">
-          {/* User Filter */}
-          <div className="relative w-64">
-            <button
-              onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-              className="w-full px-4 py-2 text-left bg-white border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <span className="flex items-center justify-between">
-                {selectedUser || 'Select User'}
-                <ChevronDown className="w-4 h-4" />
-              </span>
-            </button>
-            {isUserDropdownOpen && (
-              <div className="absolute z-20 w-full mt-1 bg-white border rounded-md shadow-lg">
-                <div className="py-1 max-h-40 overflow-y-auto">
-                  <button
-                    onClick={() => {
-                      setSelectedUser('');
-                      setIsUserDropdownOpen(false);
-                      handleSearch({} as FilterState);
-                    }}
-                    className={cn(
-                      'block w-full px-4 py-2 text-left hover:bg-gray-100',
-                      !selectedUser && 'bg-gray-50'
-                    )}
-                  >
-                    All Users
-                  </button>
-                  {uniqueUsers.map((user) => (
-                    <button
-                      key={user}
-                      onClick={() => {
-                        setSelectedUser(user);
-                        setIsUserDropdownOpen(false);
-                        handleSearch({} as FilterState);
-                      }}
-                      className={cn(
-                        'block w-full px-4 py-2 text-left hover:bg-gray-100',
-                        selectedUser === user && 'bg-gray-50'
-                      )}
-                    >
-                      {user}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Company Filter */}
-          <div className="relative w-64">
-            <button
-              onClick={() => setIsCompanyDropdownOpen(!isCompanyDropdownOpen)}
-              className="w-full px-4 py-2 text-left bg-white border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <span className="flex items-center justify-between">
-                {selectedCompany || 'Select Company'}
-                <ChevronDown className="w-4 h-4" />
-              </span>
-            </button>
-            {isCompanyDropdownOpen && (
-              <div className="absolute z-20 w-full mt-1 bg-white border rounded-md shadow-lg">
-                <div className="py-1 max-h-40 overflow-y-auto">
-                  <button
-                    onClick={() => {
-                      setSelectedCompany('');
-                      setIsCompanyDropdownOpen(false);
-                      handleSearch({} as FilterState);
-                    }}
-                    className={cn(
-                      'block w-full px-4 py-2 text-left hover:bg-gray-100',
-                      !selectedCompany && 'bg-gray-50'
-                    )}
-                  >
-                    All Companies
-                  </button>
-                  {AVAILABLE_COMPANIES.map((company) => (
-                    <button
-                      key={company}
-                      onClick={() => {
-                        setSelectedCompany(company);
-                        setIsCompanyDropdownOpen(false);
-                        handleSearch({} as FilterState);
-                      }}
-                      className={cn(
-                        'block w-full px-4 py-2 text-left hover:bg-gray-100',
-                        selectedCompany === company && 'bg-gray-50'
-                      )}
-                    >
-                      {company}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+          <Dropdown
+            value={selectedUser}
+            onChange={setSelectedUser}
+            options={uniqueUsers}
+            placeholder="Select User"
+            isOpen={isUserDropdownOpen}
+            onToggle={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+          />
+          <Dropdown
+            value={selectedCompany}
+            onChange={setSelectedCompany}
+            options={AVAILABLE_COMPANIES}
+            placeholder="Select Company"
+            isOpen={isCompanyDropdownOpen}
+            onToggle={() => setIsCompanyDropdownOpen(!isCompanyDropdownOpen)}
+          />
         </div>
 
         <div className="overflow-x-auto">
