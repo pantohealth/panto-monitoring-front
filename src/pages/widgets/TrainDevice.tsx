@@ -1,46 +1,108 @@
+import { useState } from 'react';
 import { DateTimeFilters } from '../../components/filters/DateTimeFilters';
-import { exportToPDF } from '../../utils/export';
-import { exportToExcel } from '../../utils/export';
+import { exportToPDF, exportToExcel } from '../../utils/export';
+import { Dropdown } from '../../components/ui/Dropdown';
+import { Settings, Gauge } from 'lucide-react';
 
-const MOCK_DEVICES = [
+interface TrainDevice {
+  id: string;
+  name: string;
+  carbonStrip: number;
+  lastConnection: string | null;
+  distance: number;
+  speed: number;
+  batteryA: number;
+  batteryB: number;
+  devicePoints: {
+    id: number;
+    status: 'active' | 'warning' | 'error';
+  }[];
+}
+
+const MOCK_DEVICES: TrainDevice[] = [
   {
-    id: 1,
-    trainId: 'T-001',
-    deviceId: 'DEV-123',
-    status: 'Active',
-    lastPing: '2024-03-15 10:30:00',
-    location: 'Car 1'
+    id: 'DB-001',
+    name: 'DB Netz',
+    carbonStrip: 25,
+    lastConnection: null,
+    distance: 12.5,
+    speed: 60,
+    batteryA: 85,
+    batteryB: 90,
+    devicePoints: [
+      { id: 1, status: 'active' },
+      { id: 2, status: 'warning' },
+      { id: 3, status: 'error' }
+    ]
   },
   {
-    id: 2,
-    trainId: 'T-002',
-    deviceId: 'DEV-124',
-    status: 'Inactive',
-    lastPing: '2024-03-15 09:45:00',
-    location: 'Car 3'
-  },
-  {
-    id: 3,
-    trainId: 'T-003',
-    deviceId: 'DEV-125',
-    status: 'Maintenance',
-    lastPing: '2024-03-15 08:15:00',
-    location: 'Car 2'
+    id: 'MIN-001',
+    name: 'Minelge1',
+    carbonStrip: 35,
+    lastConnection: '2024-10-24T23:01:00',
+    distance: 8.3,
+    speed: 45,
+    batteryA: 75,
+    batteryB: 80,
+    devicePoints: [
+      { id: 1, status: 'active' },
+      { id: 2, status: 'warning' }
+    ]
   }
 ];
 
 export function TrainDevicePage() {
+  const [selectedDevice, setSelectedDevice] = useState<string>('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const filteredDevices = selectedDevice
+    ? MOCK_DEVICES.filter(device => device.id === selectedDevice)
+    : MOCK_DEVICES;
+
   const handleExportPDF = () => {
-    exportToPDF('Train Devices', MOCK_DEVICES, ['id', 'trainId', 'deviceId', 'status', 'lastPing', 'location']);
+    exportToPDF('Train Devices Report', filteredDevices, [
+      'id',
+      'name',
+      'carbonStrip',
+      'lastConnection',
+      'distance',
+      'speed',
+      'batteryA',
+      'batteryB'
+    ]);
   };
 
   const handleExportExcel = () => {
-    exportToExcel('Train Devices', MOCK_DEVICES, ['id', 'trainId', 'deviceId', 'status', 'lastPing', 'location']);
+    exportToExcel('Train Devices Report', filteredDevices, [
+      'id',
+      'name',
+      'carbonStrip',
+      'lastConnection',
+      'distance',
+      'speed',
+      'batteryA',
+      'batteryB'
+    ]);
+  };
+
+  const getStatusColor = (status: 'active' | 'warning' | 'error') => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-500';
+      case 'warning':
+        return 'bg-yellow-500';
+      case 'error':
+        return 'bg-red-500';
+      default:
+        return 'bg-gray-500';
+    }
   };
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-gray-900">Device on Train</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold text-gray-900">Device on Trains</h1>
+      </div>
 
       <DateTimeFilters 
         onExport={handleExportPDF}
@@ -48,59 +110,85 @@ export function TrainDevicePage() {
         onSearch={() => {}}
       />
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Train ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Device ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Last Ping
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Location
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {MOCK_DEVICES.map((device) => (
-                <tr key={device.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {device.trainId}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {device.deviceId}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      device.status === 'Active' 
-                        ? 'bg-green-100 text-green-800'
-                        : device.status === 'Inactive'
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {device.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {device.lastPing}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {device.location}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div className="p-4 bg-white shadow rounded-lg">
+        <Dropdown
+          value={selectedDevice}
+          onChange={setSelectedDevice}
+          options={MOCK_DEVICES.map(device => device.id)}
+          placeholder="Select Device"
+          isOpen={isDropdownOpen}
+          onToggle={() => setIsDropdownOpen(!isDropdownOpen)}
+        />
+      </div>
+
+      <div className="space-y-4">
+        {filteredDevices.map((device) => (
+          <div key={device.id} className="bg-gray-800 rounded-lg p-6 text-white">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-4">
+                <h2 className="text-xl font-semibold">{device.name}</h2>
+                <div className="flex items-center space-x-2 text-gray-300">
+                  <span>Carbon strip</span>
+                  <span className="bg-gray-700 px-2 py-1 rounded">
+                    {device.carbonStrip}%
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <span className="text-gray-300">
+                  Last connection: {device.lastConnection ? new Date(device.lastConnection).toLocaleString() : '---'}
+                </span>
+                <button className="bg-blue-600 p-2 rounded-lg hover:bg-blue-700 transition-colors">
+                  <Settings className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-8 mb-6">
+              <div className="flex items-center space-x-4">
+                <Gauge className="w-6 h-6 text-blue-400" />
+                <div>
+                  <span className="block text-sm text-gray-400">Distance</span>
+                  <span className="text-lg">{device.distance} km</span>
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <Gauge className="w-6 h-6 text-blue-400" />
+                <div>
+                  <span className="block text-sm text-gray-400">Speed</span>
+                  <span className="text-lg">{device.speed} km/h</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="flex items-center justify-center">
+                <div className="flex space-x-2">
+                  {device.devicePoints.map((point) => (
+                    <div
+                      key={point.id}
+                      className={`w-8 h-8 rounded-full ${getStatusColor(point.status)} flex items-center justify-center`}
+                    >
+                      {point.id}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center justify-center">
+                <div className="text-center">
+                  <span className="block text-sm text-gray-400">Battery A</span>
+                  <span className="text-lg">{device.batteryA}%</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-center">
+                <div className="text-center">
+                  <span className="block text-sm text-gray-400">Battery B</span>
+                  <span className="text-lg">{device.batteryB}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
