@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
 
@@ -14,8 +14,8 @@ export function exportToPDF(title: string, data: any[], columns: string[]) {
   doc.setFontSize(10);
   doc.text(`Generated on: ${format(new Date(), 'PPpp')}`, 14, 25);
   
-  // Add table
-  doc.autoTable({
+  // Add table with proper typing
+  autoTable(doc, {
     head: [columns],
     body: data.map(item => columns.map(col => item[col])),
     startY: 30,

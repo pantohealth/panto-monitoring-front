@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 
 interface DateTimeFiltersProps {
   onExport: () => void;
-  onExportExcel: () => void;
+  onExportExcel?: () => void;
   onSearch: (filters: FilterState) => void;
 }
 

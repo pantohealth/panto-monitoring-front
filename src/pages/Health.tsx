@@ -20,7 +20,7 @@ export function HealthPage() {
         <h1 className="text-2xl font-semibold text-gray-900">Server Health</h1>
       </div>
 
-      <DateTimeFilters onExport={handleExport} />
+      <DateTimeFilters onExport={handleExport} onSearch={() => {}}/>
 
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
