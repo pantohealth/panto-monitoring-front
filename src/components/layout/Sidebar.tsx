@@ -16,6 +16,7 @@ const navigation = [
     icon: LayoutGrid,
     subItems: [
       { name: 'Data to Server Log', href: '/dashboard/widgets/server-log' },
+      { name: 'System Log', href: '/dashboard/widgets/system-log' },
       { name: 'Device on Train', href: '/dashboard/widgets/train-device' }
     ]
   },

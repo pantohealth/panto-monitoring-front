@@ -85,19 +85,6 @@ export function TrainDevicePage() {
     ]);
   };
 
-  const getStatusColor = (status: 'active' | 'warning' | 'error') => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-500';
-      case 'warning':
-        return 'bg-yellow-500';
-      case 'error':
-        return 'bg-red-500';
-      default:
-        return 'bg-gray-500';
-    }
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -110,85 +97,86 @@ export function TrainDevicePage() {
         onSearch={() => {}}
       />
 
-      <div className="p-4 bg-white shadow rounded-lg">
-        <Dropdown
-          value={selectedDevice}
-          onChange={setSelectedDevice}
-          options={MOCK_DEVICES.map(device => device.id)}
-          placeholder="Select Device"
-          isOpen={isDropdownOpen}
-          onToggle={() => setIsDropdownOpen(!isDropdownOpen)}
-        />
-      </div>
+      <div className="bg-white shadow rounded-lg">
+        <div className="p-4 border-b border-gray-200">
+          <Dropdown
+            value={selectedDevice}
+            onChange={setSelectedDevice}
+            options={MOCK_DEVICES.map(device => device.id)}
+            placeholder="Select Device"
+            isOpen={isDropdownOpen}
+            onToggle={() => setIsDropdownOpen(!isDropdownOpen)}
+          />
+        </div>
 
-      <div className="space-y-4">
-        {filteredDevices.map((device) => (
-          <div key={device.id} className="bg-gray-800 rounded-lg p-6 text-white">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-4">
-                <h2 className="text-xl font-semibold">{device.name}</h2>
-                <div className="flex items-center space-x-2 text-gray-300">
-                  <span>Carbon strip</span>
-                  <span className="bg-gray-700 px-2 py-1 rounded">
-                    {device.carbonStrip}%
+        <div className="divide-y divide-gray-200">
+          {filteredDevices.map((device) => (
+            <div key={device.id} className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-4">
+                  <h2 className="text-xl font-semibold text-gray-900">{device.name}</h2>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-500">Carbon strip</span>
+                    <span className="px-2 py-1 text-sm bg-gray-100 rounded">
+                      {device.carbonStrip}%
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <span className="text-sm text-gray-500">
+                    Last connection: {device.lastConnection ? new Date(device.lastConnection).toLocaleString() : '---'}
                   </span>
+                  <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+                    <Settings className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
-              <div className="flex items-center space-x-4">
-                <span className="text-gray-300">
-                  Last connection: {device.lastConnection ? new Date(device.lastConnection).toLocaleString() : '---'}
-                </span>
-                <button className="bg-blue-600 p-2 rounded-lg hover:bg-blue-700 transition-colors">
-                  <Settings className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-8 mb-6">
-              <div className="flex items-center space-x-4">
-                <Gauge className="w-6 h-6 text-blue-400" />
-                <div>
-                  <span className="block text-sm text-gray-400">Distance</span>
-                  <span className="text-lg">{device.distance} km</span>
+              <div className="grid grid-cols-2 gap-8 mb-6">
+                <div className="flex items-center space-x-4 bg-gray-50 p-4 rounded-lg">
+                  <Gauge className="w-6 h-6 text-blue-500" />
+                  <div>
+                    <span className="block text-sm text-gray-500">Distance</span>
+                    <span className="text-lg font-medium">{device.distance} km</span>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-4 bg-gray-50 p-4 rounded-lg">
+                  <Gauge className="w-6 h-6 text-blue-500" />
+                  <div>
+                    <span className="block text-sm text-gray-500">Speed</span>
+                    <span className="text-lg font-medium">{device.speed} km/h</span>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center space-x-4">
-                <Gauge className="w-6 h-6 text-blue-400" />
-                <div>
-                  <span className="block text-sm text-gray-400">Speed</span>
-                  <span className="text-lg">{device.speed} km/h</span>
-                </div>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="flex items-center justify-center">
-                <div className="flex space-x-2">
-                  {device.devicePoints.map((point) => (
-                    <div
-                      key={point.id}
-                      className={`w-8 h-8 rounded-full ${getStatusColor(point.status)} flex items-center justify-center`}
-                    >
-                      {point.id}
-                    </div>
-                  ))}
+              <div className="grid grid-cols-3 gap-6">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="flex justify-center space-x-2">
+                    {device.devicePoints.map((point) => (
+                      <div
+                        key={point.id}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-medium ${
+                          point.status === 'active' ? 'bg-green-500' :
+                          point.status === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
+                        }`}
+                      >
+                        {point.id}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center justify-center">
-                <div className="text-center">
-                  <span className="block text-sm text-gray-400">Battery A</span>
-                  <span className="text-lg">{device.batteryA}%</span>
+                <div className="bg-gray-50 p-4 rounded-lg text-center">
+                  <span className="block text-sm text-gray-500">Battery A</span>
+                  <span className="text-lg font-medium">{device.batteryA}%</span>
                 </div>
-              </div>
-              <div className="flex items-center justify-center">
-                <div className="text-center">
-                  <span className="block text-sm text-gray-400">Battery B</span>
-                  <span className="text-lg">{device.batteryB}%</span>
+                <div className="bg-gray-50 p-4 rounded-lg text-center">
+                  <span className="block text-sm text-gray-500">Battery B</span>
+                  <span className="text-lg font-medium">{device.batteryB}%</span>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

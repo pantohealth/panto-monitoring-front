@@ -8,6 +8,7 @@ import { CompanyPage } from './pages/Company';
 import { HealthPage } from './pages/Health';
 import { WarningsPage } from './pages/Warnings';
 import { ServerLogPage } from './pages/widgets/ServerLog';
+import { SystemLogPage } from './pages/widgets/SystemLog';
 import { TrainDevicePage } from './pages/widgets/TrainDevice';
 import { AddUserPage } from './pages/settings/AddUser';
 
@@ -25,6 +26,7 @@ function App() {
             <Route path="health" element={<HealthPage />} />
             <Route path="warnings" element={<WarningsPage />} />
             <Route path="widgets/server-log" element={<ServerLogPage />} />
+            <Route path="widgets/system-log" element={<SystemLogPage />} />
             <Route path="widgets/train-device" element={<TrainDevicePage />} />
             <Route path="settings/add-user" element={<AddUserPage />} />
           </Route>
