@@ -2,17 +2,19 @@ import { useState } from 'react';
 import { DateTimeFilters } from '../../components/filters/DateTimeFilters';
 import { exportToPDF, exportToExcel } from '../../utils/export';
 import { Dropdown } from '../../components/ui/Dropdown';
-import { Settings, Gauge } from 'lucide-react';
 
 interface TrainDevice {
   id: string;
   name: string;
   carbonStrip: number;
   lastConnection: string | null;
-  distance: number;
   speed: number;
   batteryA: number;
   batteryB: number;
+  kmD: number;
+  km: number;
+  apD: string;
+  ap: string;
   devicePoints: {
     id: number;
     status: 'active' | 'warning' | 'error';
@@ -25,10 +27,13 @@ const MOCK_DEVICES: TrainDevice[] = [
     name: 'DB Netz',
     carbonStrip: 25,
     lastConnection: null,
-    distance: 12.5,
     speed: 60,
     batteryA: 85,
     batteryB: 90,
+    kmD: 12.5,
+    km: 15.2,
+    apD: '~',
+    ap: '~',
     devicePoints: [
       { id: 1, status: 'active' },
       { id: 2, status: 'warning' },
@@ -40,10 +45,13 @@ const MOCK_DEVICES: TrainDevice[] = [
     name: 'Minelge1',
     carbonStrip: 35,
     lastConnection: '2024-10-24T23:01:00',
-    distance: 8.3,
     speed: 45,
     batteryA: 75,
     batteryB: 80,
+    kmD: 8.3,
+    km: 10.1,
+    apD: '~',
+    ap: '~',
     devicePoints: [
       { id: 1, status: 'active' },
       { id: 2, status: 'warning' }
@@ -51,9 +59,23 @@ const MOCK_DEVICES: TrainDevice[] = [
   }
 ];
 
+const COLUMNS = [
+  'Device',
+  'Carbon Strip',
+  'Last Connection',
+  'Speed',
+  'Battery A',
+  'Battery B',
+  'Distance ',
+  'Distance D',
+  'A/p ',
+  'A/p D',
+  'Device Points'
+];
+
 export function TrainDevicePage() {
   const [selectedDevice, setSelectedDevice] = useState<string>('');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
 
   const filteredDevices = selectedDevice
     ? MOCK_DEVICES.filter(device => device.id === selectedDevice)
@@ -65,10 +87,13 @@ export function TrainDevicePage() {
       'name',
       'carbonStrip',
       'lastConnection',
-      'distance',
       'speed',
       'batteryA',
-      'batteryB'
+      'batteryB',
+      'kmD',
+      'kmO',
+      'apD',
+      'apO'
     ]);
   };
 
@@ -78,10 +103,13 @@ export function TrainDevicePage() {
       'name',
       'carbonStrip',
       'lastConnection',
-      'distance',
       'speed',
       'batteryA',
-      'batteryB'
+      'batteryB',
+      'kmD',
+      'kmO',
+      'apD',
+      'apO'
     ]);
   };
 
@@ -109,73 +137,77 @@ export function TrainDevicePage() {
           />
         </div>
 
-        <div className="divide-y divide-gray-200">
-          {filteredDevices.map((device) => (
-            <div key={device.id} className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-4">
-                  <h2 className="text-xl font-semibold text-gray-900">{device.name}</h2>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-500">Carbon strip</span>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                {COLUMNS.map((column) => (
+                  <th
+                    key={column}
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap"
+                  >
+                    {column}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredDevices.map((device) => (
+                <tr key={device.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="text-sm font-medium text-gray-900">{device.name}</div>
+                      <span className="ml-2 text-xs text-gray-500">({device.id})</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <span className="px-2 py-1 text-sm bg-gray-100 rounded">
                       {device.carbonStrip}%
                     </span>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <span className="text-sm text-gray-500">
-                    Last connection: {device.lastConnection ? new Date(device.lastConnection).toLocaleString() : '---'}
-                  </span>
-                  <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
-                    <Settings className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-8 mb-6">
-                <div className="flex items-center space-x-4 bg-gray-50 p-4 rounded-lg">
-                  <Gauge className="w-6 h-6 text-blue-500" />
-                  <div>
-                    <span className="block text-sm text-gray-500">Distance</span>
-                    <span className="text-lg font-medium">{device.distance} km</span>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-4 bg-gray-50 p-4 rounded-lg">
-                  <Gauge className="w-6 h-6 text-blue-500" />
-                  <div>
-                    <span className="block text-sm text-gray-500">Speed</span>
-                    <span className="text-lg font-medium">{device.speed} km/h</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-6">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex justify-center space-x-2">
-                    {device.devicePoints.map((point) => (
-                      <div
-                        key={point.id}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-medium ${
-                          point.status === 'active' ? 'bg-green-500' :
-                          point.status === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
-                        }`}
-                      >
-                        {point.id}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg text-center">
-                  <span className="block text-sm text-gray-500">Battery A</span>
-                  <span className="text-lg font-medium">{device.batteryA}%</span>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg text-center">
-                  <span className="block text-sm text-gray-500">Battery B</span>
-                  <span className="text-lg font-medium">{device.batteryB}%</span>
-                </div>
-              </div>
-            </div>
-          ))}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {device.lastConnection ? new Date(device.lastConnection).toLocaleString() : '---'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {device.speed} km/h
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {device.batteryA}%
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {device.batteryB}%
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {device.kmD} km
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {device.km} km
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {device.apD}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {device.ap}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex space-x-2">
+                      {device.devicePoints.map((point) => (
+                        <div
+                          key={point.id}
+                          className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-medium ${
+                            point.status === 'active' ? 'bg-green-500' :
+                            point.status === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
+                          }`}
+                        >
+                          {point.id}
+                        </div>
+                      ))}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

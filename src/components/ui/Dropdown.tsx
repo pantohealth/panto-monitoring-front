@@ -19,7 +19,7 @@ export function Dropdown({
   onToggle,
 }: DropdownProps) {
   return (
-    <div className="relative w-64">
+    <div className="relative w-56">
       <button
         onClick={onToggle}
         className="w-full px-4 py-2 text-left bg-white border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"

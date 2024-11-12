@@ -1,6 +1,6 @@
-import React from 'react';
+import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Users, Monitor, Building2, Activity, AlertTriangle, LogOut, Settings, LayoutGrid } from 'lucide-react';
+import { ChevronDown,Users, Monitor, Building2, Activity, AlertTriangle, LogOut, Settings, LayoutGrid } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import toast from 'react-hot-toast';
 
@@ -30,13 +30,16 @@ const navigation = [
   }
 ];
 
+
 export function Sidebar() {
   const navigate = useNavigate();
-  const [expandedItems, setExpandedItems] = React.useState<string[]>([]);
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isDropdownOpenSetting, setIsDropdownOpenSetting] = useState(false);
 
   const handleLogout = () => {
     toast.success('Logged out successfully');
-    navigate('/login');
+    navigate('/login', {replace:true});
   };
 
   const toggleExpand = (name: string) => {
@@ -58,7 +61,11 @@ export function Sidebar() {
             {item.subItems ? (
               <>
                 <button
-                  onClick={() => toggleExpand(item.name)}
+                  onClick={() =>{
+                    toggleExpand(item.name)
+                    if(item.name === 'Settings') setIsDropdownOpenSetting(!isDropdownOpenSetting)
+                    if(item.name === 'Widgets') setIsDropdownOpen(!isDropdownOpen)
+                  }}
                   className={cn(
                     'w-full group flex items-center px-2 py-2 text-sm font-medium rounded-md',
                     'text-gray-300 hover:bg-gray-700 hover:text-white'
@@ -69,6 +76,11 @@ export function Sidebar() {
                     aria-hidden="true"
                   />
                   {item.name}
+                  {(item.name === "Widgets" || item.name === "Settings") && 
+                  <ChevronDown className={cn('w-4 h-4 ml-2 transition-transform duration-200',
+                        item.name === 'Widgets' && isDropdownOpen && 'transform rotate-180',
+                        item.name === 'Settings' && isDropdownOpenSetting && 'transform rotate-180'
+                      )}/>}
                 </button>
                 {expandedItems.includes(item.name) && (
                   <div className="ml-8 space-y-1">

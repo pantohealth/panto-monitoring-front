@@ -152,7 +152,7 @@ export function ServerLogPage() {
                 <th className="px-4 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">Temp</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">Gps</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">Laser</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">Laser V</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-blue-500 uppercase whitespace-nowrap">Laser V</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">Tower</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">Error</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-yellow-500 uppercase tracking-wider">Abnormal</th>
