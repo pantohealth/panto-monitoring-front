@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { DateTimeFilters } from '../components/filters/DateTimeFilters';
-import { exportToPDF, exportToExcel } from '../utils/export';
-import { Dropdown } from '../components/ui/Dropdown';
+import { DateTimeFilters } from '../../components/filters/DateTimeFilters';
+import { exportToPDF, exportToExcel } from '../../utils/export';
+import { Dropdown } from '../../components/ui/Dropdown';
 
 interface Warning {
   id: number;
@@ -56,7 +56,9 @@ const MOCK_WARNINGS: Warning[] = [
   }
 ];
 
-export function WarningsPage() {
+const ITEMS_PER_PAGE = 2; // Number of warnings to display per page
+
+export function AdminWarningsPage() {
   const [selectedType, setSelectedType] = useState<string>('');
   const [selectedSide, setSelectedSide] = useState<string>('');
   const [selectedDevice, setSelectedDevice] = useState<string>('');
@@ -65,6 +67,7 @@ export function WarningsPage() {
   const [isSideDropdownOpen, setIsSideDropdownOpen] = useState(false);
   const [isDeviceDropdownOpen, setIsDeviceDropdownOpen] = useState(false);
   const [isActionDropdownOpen, setIsActionDropdownOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
   const filteredWarnings = MOCK_WARNINGS.filter(warning => {
     if (selectedType && warning.type !== selectedType) return false;
@@ -99,6 +102,21 @@ export function WarningsPage() {
       'details'
     ]);
   };
+
+    // Pagination logic
+    const totalPages = Math.ceil(filteredWarnings.length / ITEMS_PER_PAGE);
+    const paginatedWarnings = filteredWarnings.slice(
+      (currentPage - 1) * ITEMS_PER_PAGE,
+      currentPage * ITEMS_PER_PAGE
+    );
+  
+    const handlePrevious = () => {
+      if (currentPage > 1) setCurrentPage((prevPage) => prevPage - 1);
+    };
+  
+    const handleNext = () => {
+      if (currentPage < totalPages) setCurrentPage((prevPage) => prevPage + 1);
+    };
 
   return (
     <div className="space-y-6">
@@ -186,20 +204,28 @@ export function WarningsPage() {
         <div className="px-6 py-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <button
-              className="px-3 py-1 border rounded text-sm text-gray-600 hover:bg-gray-50"
-              onClick={() => {}}
+              className={`px-3 py-1 border rounded text-sm ${
+                currentPage === 1 ? 'text-gray-400' : 'text-gray-600 hover:bg-gray-50'
+              }`}
+              onClick={handlePrevious}
+              disabled={currentPage === 1}
             >
               Previous
             </button>
             <div className="flex items-center space-x-2">
-              <span className="px-3 py-1 bg-blue-500 text-white rounded">1</span>
-              <span className="px-3 py-1 text-gray-600">2</span>
-              <span className="px-2 text-gray-600">...</span>
-              <span className="px-3 py-1 text-gray-600">30463047</span>
+              <span className="px-3 py-1 bg-blue-500 text-white rounded">
+                {currentPage}
+              </span>
+              <span className="text-gray-600">of {totalPages}</span>
             </div>
             <button
-              className="px-3 py-1 border rounded text-sm text-gray-600 hover:bg-gray-50"
-              onClick={() => {}}
+              className={`px-3 py-1 border rounded text-sm ${
+                currentPage === totalPages
+                  ? 'text-gray-400'
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`}
+              onClick={handleNext}
+              disabled={currentPage === totalPages}
             >
               Next
             </button>

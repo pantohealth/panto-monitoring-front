@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { ChevronDown,Users, Monitor, Building2, Activity, AlertTriangle, LogOut, Settings, LayoutGrid } from 'lucide-react';
+import { ChevronDown,Users, Monitor, Building2, Activity, LogOut,  Layers3  , LayoutDashboard } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import toast from 'react-hot-toast';
 
@@ -9,15 +9,27 @@ const navigation = [
   { name: 'Devices', href: '/dashboard/devices', icon: Monitor },
   { name: 'Company', href: '/dashboard/company', icon: Building2 },
   { name: 'Server Health', href: '/dashboard/health', icon: Activity },
-  { name: 'Warnings', href: '/dashboard/warnings', icon: AlertTriangle },
   { 
     name: 'Widgets', 
     href: '/dashboard/widgets', 
-    icon: LayoutGrid,
+    icon:  Layers3 ,
     subItems: [
       { name: 'Data to Server Log', href: '/dashboard/widgets/server-log' },
       { name: 'System Log', href: '/dashboard/widgets/system-log' },
       { name: 'Device on Train', href: '/dashboard/widgets/train-device' }
+    ]
+  },
+  {
+    name: 'Admin Dashboard',
+    href: '/dashboard/admin',
+    icon: LayoutDashboard,
+    subItems: [
+      { name: 'Customer Bugs', href: '/dashboard/admin/bugs' },
+      { name: 'Simulation Requests', href: '/dashboard/admin/simulations' },
+      { name: 'Data Management', href: '/dashboard/admin/data' },
+      { name: 'User Journey Logs', href: '/dashboard/admin/journey' },
+      { name: 'Developer Report', href: '/dashboard/admin/developer' },
+      { name: 'Warning Page', href: '/dashboard/admin/warnings' }
     ]
   },
  
@@ -28,6 +40,7 @@ export function Sidebar() {
   const navigate = useNavigate();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isDropdownOpenDashboard, setIsDropdownOpenDashboard] = useState(false);
 
   const handleLogout = () => {
     toast.success('Logged out successfully');
@@ -56,6 +69,7 @@ export function Sidebar() {
                   onClick={() =>{
                     toggleExpand(item.name)
                     if(item.name === 'Widgets') setIsDropdownOpen(!isDropdownOpen)
+                    if(item.name === 'Admin Dashboard') setIsDropdownOpenDashboard(!isDropdownOpenDashboard)
                   }}
                   className={cn(
                     'w-full group flex items-center px-2 py-2 text-sm font-medium rounded-md',
@@ -67,9 +81,10 @@ export function Sidebar() {
                     aria-hidden="true"
                   />
                   {item.name}
-                  {(item.name === "Widgets") && 
+                  {(item.name === "Widgets" || item.name === 'Admin Dashboard') && 
                   <ChevronDown className={cn('w-4 h-4 ml-2 transition-transform duration-200',
                         item.name === 'Widgets' && isDropdownOpen && 'transform rotate-180',
+                        item.name === 'Admin Dashboard' && isDropdownOpenDashboard && 'transform rotate-180',
                       )}/>}
                 </button>
                 {expandedItems.includes(item.name) && (
