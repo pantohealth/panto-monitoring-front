@@ -20,14 +20,7 @@ const navigation = [
       { name: 'Device on Train', href: '/dashboard/widgets/train-device' }
     ]
   },
-  { 
-    name: 'Settings', 
-    href: '/dashboard/settings', 
-    icon: Settings,
-    subItems: [
-      { name: 'Add User', href: '/dashboard/settings/add-user' }
-    ]
-  }
+ 
 ];
 
 
@@ -35,7 +28,6 @@ export function Sidebar() {
   const navigate = useNavigate();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isDropdownOpenSetting, setIsDropdownOpenSetting] = useState(false);
 
   const handleLogout = () => {
     toast.success('Logged out successfully');
@@ -63,7 +55,6 @@ export function Sidebar() {
                 <button
                   onClick={() =>{
                     toggleExpand(item.name)
-                    if(item.name === 'Settings') setIsDropdownOpenSetting(!isDropdownOpenSetting)
                     if(item.name === 'Widgets') setIsDropdownOpen(!isDropdownOpen)
                   }}
                   className={cn(
@@ -76,10 +67,9 @@ export function Sidebar() {
                     aria-hidden="true"
                   />
                   {item.name}
-                  {(item.name === "Widgets" || item.name === "Settings") && 
+                  {(item.name === "Widgets") && 
                   <ChevronDown className={cn('w-4 h-4 ml-2 transition-transform duration-200',
                         item.name === 'Widgets' && isDropdownOpen && 'transform rotate-180',
-                        item.name === 'Settings' && isDropdownOpenSetting && 'transform rotate-180'
                       )}/>}
                 </button>
                 {expandedItems.includes(item.name) && (
