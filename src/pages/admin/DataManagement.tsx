@@ -1,177 +1,180 @@
 import { useState } from 'react';
-import { DateTimeFilters } from '../../components/filters/DateTimeFilters';
-import { exportToPDF, exportToExcel } from '../../utils/export';
-import { Database, HardDrive, Upload, Download, Trash2 } from 'lucide-react';
+import { RefreshCcw, Plus, Database } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
+import { Modal } from '../../components/ui/Modal';
+import { Dropdown } from '../../components/ui/Dropdown';
+import { Input } from '../../components/ui/Input';
+import toast from 'react-hot-toast';
 
-const MOCK_DATA = [
+interface Task {
+  id: number;
+  applicator: string;
+  type: string;
+  device: string;
+  start: string;
+  end: string;
+  status: 'Done' | 'Failed';
+}
+
+const MOCK_TASKS: Task[] = [
   {
     id: 1,
-    name: 'Train Location Data',
-    type: 'GPS Data',
-    size: '2.5 GB',
-    records: 150000,
-    lastBackup: '2024-03-15T10:30:00',
-    status: 'Active',
-    retention: '90 days'
+    applicator: 'Shayan',
+    type: 'Add',
+    device: 'Leipzig 3',
+    start: '2024/11/01 12:00',
+    end: '2024/11/07 20:15',
+    status: 'Failed'
   },
   {
     id: 2,
-    name: 'System Logs',
-    type: 'Log Files',
-    size: '1.8 GB',
-    records: 250000,
-    lastBackup: '2024-03-15T09:45:00',
-    status: 'Archived',
-    retention: '180 days'
+    applicator: 'Shayan',
+    type: 'Add',
+    device: 'Leipzig 3',
+    start: '2024/11/01 12:00',
+    end: '2024/11/07 17:04',
+    status: 'Done'
   },
   {
     id: 3,
-    name: 'User Analytics',
-    type: 'Analytics Data',
-    size: '3.2 GB',
-    records: 180000,
-    lastBackup: '2024-03-15T08:15:00',
-    status: 'Active',
-    retention: '365 days'
+    applicator: 'Shayan',
+    type: 'Add',
+    device: 'Leipzig 3',
+    start: '2024/11/01 12:00',
+    end: '2024/11/07 16:57',
+    status: 'Failed'
+  },
+  {
+    id: 4,
+    applicator: 'Shayan',
+    type: 'Add',
+    device: 'Leipzig 3',
+    start: '2024/10/06 12:00',
+    end: '2024/10/07 12:00',
+    status: 'Done'
+  },
+  {
+    id: 5,
+    applicator: 'Shayan',
+    type: 'Remove',
+    device: 'Leipzig 3',
+    start: '2024/10/06 12:00',
+    end: '2024/10/29 19:57',
+    status: 'Done'
+  },
+  {
+    id: 6,
+    applicator: 'Shayan',
+    type: 'Remove',
+    device: 'Leipzig 3',
+    start: '2024/10/06 19:55',
+    end: '2024/10/29 19:56',
+    status: 'Done'
   }
 ];
 
-export function DataManagementPage() {
-  const [selectedType, setSelectedType] = useState<string>('all');
+const DEVICES = ['Leipzig 3', 'Leipzig 2', 'Leipzig 1'];
+const TYPES = ['Add', 'Remove'];
 
-  const handleExportPDF = () => {
-    exportToPDF('Data Management Report', MOCK_DATA, [
-      'name',
-      'type',
-      'size',
-      'records',
-      'lastBackup',
-      'status',
-      'retention'
-    ]);
+export function DataManagementPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDevice, setSelectedDevice] = useState('');
+  const [selectedType, setSelectedType] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
+  const [isDeviceDropdownOpen, setIsDeviceDropdownOpen] = useState(false);
+  const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
+
+  const handleRefresh = () => {
+    toast.success('Data refreshed successfully');
   };
 
-  const handleExportExcel = () => {
-    exportToExcel('Data Management Report', MOCK_DATA, [
-      'name',
-      'type',
-      'size',
-      'records',
-      'lastBackup',
-      'status',
-      'retention'
-    ]);
+  const handleCreate = () => {
+    if (!selectedDevice || !selectedType || !startTime || !endTime) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    // Add new task logic here
+    toast.success('Task created successfully');
+    setIsModalOpen(false);
+    resetForm();
+  };
+
+  const resetForm = () => {
+    setSelectedDevice('');
+    setSelectedType('');
+    setStartTime('');
+    setEndTime('');
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <Database className="h-6 w-6 text-indigo-500" />
           <h1 className="text-2xl font-semibold text-gray-900">Data Management</h1>
+          <span className="bg-gray-100 px-2 py-1 rounded text-sm text-gray-600">
+            {MOCK_TASKS.length} REQUESTS
+          </span>
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <HardDrive className="h-5 w-5 text-blue-500" />
-              <h2 className="text-lg font-medium text-gray-900">Storage Usage</h2>
-            </div>
-            <span className="text-sm text-gray-500">7.5 GB / 10 GB</span>
-          </div>
-          <div className="mt-4">
-            <div className="w-full bg-gray-200 rounded-full h-2.5">
-              <div className="bg-blue-500 h-2.5 rounded-full" style={{ width: '75%' }}></div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center space-x-2">
-            <Upload className="h-5 w-5 text-green-500" />
-            <h2 className="text-lg font-medium text-gray-900">Backup Status</h2>
-          </div>
-          <p className="mt-2 text-sm text-gray-600">Last successful backup: 2 hours ago</p>
-          <Button variant="secondary" size="sm" className="mt-4">
-            Start Backup
+        <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            onClick={handleRefresh}
+          >
+            <RefreshCcw className="w-4 h-4 mr-2" />
+            Refresh
           </Button>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center space-x-2">
-            <Download className="h-5 w-5 text-purple-500" />
-            <h2 className="text-lg font-medium text-gray-900">Data Recovery</h2>
-          </div>
-          <p className="mt-2 text-sm text-gray-600">3 recovery points available</p>
-          <Button variant="secondary" size="sm" className="mt-4">
-            Restore Data
+          <Button
+            onClick={() => setIsModalOpen(true)}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Create
           </Button>
         </div>
       </div>
+      <p className="text-gray-500">You can create automatic tasks in different types.</p>
 
-      <DateTimeFilters 
-        onExport={handleExportPDF}
-        onExportExcel={handleExportExcel}
-        onSearch={() => {}}
-      />
-
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="p-4 border-b border-gray-200">
-          <div className="flex space-x-4">
-            <select
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            >
-              <option value="all">All Data Types</option>
-              <option value="gps">GPS Data</option>
-              <option value="logs">Log Files</option>
-              <option value="analytics">Analytics Data</option>
-            </select>
-          </div>
-        </div>
-
+      <div className="bg-white shadow rounded-lg">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applicator</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Records</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Backup</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Device</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Retention</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {MOCK_DATA.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{item.name}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.type}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.size}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.records.toLocaleString()}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(item.lastBackup).toLocaleString()}
-                  </td>
+              {MOCK_TASKS.map((task) => (
+                <tr key={task.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{task.applicator}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{task.type}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{task.device}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{task.start}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{task.end}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      item.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                      task.status === 'Done' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
                     }`}>
-                      {item.status}
+                      {task.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.retention}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <button className="text-red-600 hover:text-red-900">
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleRefresh}
+                    >
+                      <RefreshCcw className="w-4 h-4" />
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -179,6 +182,76 @@ export function DataManagementPage() {
           </table>
         </div>
       </div>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          resetForm();
+        }}
+        title="Create New Task"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Device</label>
+            <Dropdown
+              value={selectedDevice}
+              onChange={(value) => {
+                setSelectedDevice(value);
+                setIsDeviceDropdownOpen(false);
+              }}
+              options={DEVICES}
+              placeholder="Select Device"
+              isOpen={isDeviceDropdownOpen}
+              onToggle={() => setIsDeviceDropdownOpen(!isDeviceDropdownOpen)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+            <Dropdown
+              value={selectedType}
+              onChange={(value) => {
+                setSelectedType(value);
+                setIsTypeDropdownOpen(false);
+              }}
+              options={TYPES}
+              placeholder="Select Type"
+              isOpen={isTypeDropdownOpen}
+              onToggle={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+            <Input
+              type="datetime-local"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
+            <Input
+              type="datetime-local"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+            />
+          </div>
+          <div className="flex justify-end gap-2 mt-6">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setIsModalOpen(false);
+                resetForm();
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleCreate}>
+              Create Task
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

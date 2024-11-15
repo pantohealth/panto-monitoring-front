@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { DateTimeFilters } from '../components/filters/DateTimeFilters';
-import { exportToPDF } from '../utils/export';
+import { exportToExcel, exportToPDF } from '../utils/export';
 import { Dropdown } from '../components/ui/Dropdown';
 
 const AVAILABLE_COMPANIES = [
@@ -59,8 +59,22 @@ export function CompanyPage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [filteredCompanies, setFilteredCompanies] = useState(MOCK_COMPANIES);
 
-  const handleExport = () => {
+  const handleExportPDF = () => {
     exportToPDF('Company Report', filteredCompanies, [
+      'id',
+      'name',
+      'userActivity',
+      'videoRequests',
+      'clicks',
+      'newPoints',
+      'mergePoints',
+      'simulationRequests',
+    ]);
+  };
+
+  const handleExportExcel = () => {
+    exportToExcel('Company Report', filteredCompanies, [
+      'id',
       'name',
       'userActivity',
       'videoRequests',
@@ -91,7 +105,7 @@ export function CompanyPage() {
         <h1 className="text-2xl font-semibold text-gray-900">Company Analytics</h1>
       </div>
 
-      <DateTimeFilters onExport={handleExport} onSearch={() => {}} />
+      <DateTimeFilters onExport={handleExportPDF} onExportExcel={handleExportExcel} onSearch={() => {}} />
 
       <div className="bg-white shadow rounded-lg">
       <div className="p-4 border-b border-gray-200 flex gap-4">

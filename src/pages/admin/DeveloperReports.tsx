@@ -1,203 +1,294 @@
 import { useState } from 'react';
+import { RefreshCcw, Plus, FileCode2 } from 'lucide-react';
+import { Button } from '../../components/ui/Button';
+import { Modal } from '../../components/ui/Modal';
+import { Dropdown } from '../../components/ui/Dropdown';
+import { Input } from '../../components/ui/Input';
+import toast from 'react-hot-toast';
 import { DateTimeFilters } from '../../components/filters/DateTimeFilters';
-import { exportToPDF, exportToExcel } from '../../utils/export';
-import { FileCode2, GitBranch, GitCommit, GitPullRequest } from 'lucide-react';
-import { Line } from 'react-chartjs-2';
+import { exportToExcel, exportToPDF } from '../../utils/export';
 
-const MOCK_REPORTS = [
+interface Task {
+  id: number;
+  name:string;
+  applicator: string;
+  type: string;
+  device: string;
+  condition: string;
+  start: string;
+  end: string;
+}
+
+const MOCK_TASKS: Task[] = [
   {
     id: 1,
-    developer: 'John Smith',
-    commits: 156,
-    pullRequests: 12,
-    codeReviews: 34,
-    merges: 8,
-    impact: 'High',
-    lastActivity: '2024-03-15T10:30:00'
+    name:'najie',
+    applicator: 'Shayan',
+    type: 'Add',
+    device: 'Leipzig 3',
+    condition:"somithing",
+    start: '2024/11/01 12:00',
+    end: '2024/11/07 20:15',
   },
   {
     id: 2,
-    developer: 'Sarah Johnson',
-    commits: 98,
-    pullRequests: 8,
-    codeReviews: 22,
-    merges: 5,
-    impact: 'Medium',
-    lastActivity: '2024-03-15T09:45:00'
+    name:'najie',
+    applicator: 'Shayan',
+    type: 'Add',
+    device: 'Leipzig 3',
+    condition:"somithing",
+    start: '2024/11/01 12:00',
+    end: '2024/11/07 17:04',
+  },
+  {
+    id: 3,
+    name:'najie',
+    applicator: 'Shayan',
+    type: 'Add',
+    device: 'Leipzig 3',
+    condition:"somithing",
+    start: '2024/11/01 12:00',
+    end: '2024/11/07 16:57',
+  },
+  {
+    id: 4,
+    name:'najie',
+    applicator: 'Shayan',
+    type: 'Add',
+    device: 'Leipzig 3',
+    condition:"somithing",
+    start: '2024/10/06 12:00',
+    end: '2024/10/07 12:00',
+  },
+  {
+    id: 5,
+    name:'najie',
+    applicator: 'Shayan',
+    type: 'Remove',
+    device: 'Leipzig 3',
+    condition:"somithing",
+    start: '2024/10/06 12:00',
+    end: '2024/10/29 19:57',
+  },
+  {
+    id: 6,
+    name:'najie',
+    applicator: 'Shayan',
+    type: 'Remove',
+    device: 'Leipzig 3',
+    condition:"somithing",
+    start: '2024/10/06 19:55',
+    end: '2024/10/29 19:56',
   }
 ];
 
-const activityData = {
-  labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-  datasets: [
-    {
-      label: 'Commits',
-      data: [15, 20, 25, 18, 30, 22, 15],
-      borderColor: '#3B82F6',
-      backgroundColor: 'rgba(59, 130, 246, 0.1)',
-      fill: true,
-      tension: 0.4,
-    }
-  ]
-};
-
-const chartOptions = {
-  responsive: true,
-  plugins: {
-    legend: {
-      display: false,
-    },
-  },
-  scales: {
-    y: {
-      beginAtZero: true,
-      grid: {
-        color: 'rgba(0, 0, 0, 0.1)',
-      },
-    },
-    x: {
-      grid: {
-        display: false,
-      },
-    },
-  },
-};
+const DEVICES = ['Leipzig 3', 'Leipzig 2', 'Leipzig 1'];
+const TYPES = ['Add', 'Remove'];
 
 export function DeveloperReportsPage() {
-  const [selectedImpact, setSelectedImpact] = useState<string>('all');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDevice, setSelectedDevice] = useState('');
+  const [selectedType, setSelectedType] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
+  const [isDeviceDropdownOpen, setIsDeviceDropdownOpen] = useState(false);
+  const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
+  const [data, setData] = useState(MOCK_TASKS);
+
+  const handleRefresh = () => {
+    toast.success('Data refreshed successfully');
+  };
+
+  const handleCreate = () => {
+    if (!selectedDevice || !selectedType || !startTime || !endTime) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    // Add new task logic here
+    toast.success('Task created successfully');
+    setIsModalOpen(false);
+    resetForm();
+  };
+
+  const resetForm = () => {
+    setSelectedDevice('');
+    setSelectedType('');
+    setStartTime('');
+    setEndTime('');
+  };
 
   const handleExportPDF = () => {
-    exportToPDF('Developer Activity Report', MOCK_REPORTS, [
-      'developer',
-      'commits',
-      'pullRequests',
-      'codeReviews',
-      'merges',
-      'impact',
-      'lastActivity'
+    exportToPDF('Developer Report', MOCK_TASKS, [
+      'id',
+      'name',
+      'applicator',
+      'type',
+      'device',
+      'condition',
+      'start',
+      'end',
     ]);
   };
 
   const handleExportExcel = () => {
-    exportToExcel('Developer Activity Report', MOCK_REPORTS, [
-      'developer',
-      'commits',
-      'pullRequests',
-      'codeReviews',
-      'merges',
-      'impact',
-      'lastActivity'
+    exportToExcel('Developer Report', MOCK_TASKS, [
+      'id',
+      'name',
+      'applicator',
+      'type',
+      'device',
+      'condition',
+      'start',
+      'end',
     ]);
   };
 
+  const deleteHandler = (id: number) => {
+   const deleteTask = data.filter(task => task.id !== id)
+   setData(deleteTask)
+  }
+
   return (
     <div className="space-y-6">
+
+      <DateTimeFilters onExport={handleExportPDF} onExportExcel={handleExportExcel} onSearch={() => {}} />
+
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <FileCode2 className="h-6 w-6 text-indigo-500" />
-          <h1 className="text-2xl font-semibold text-gray-900">Developer Reports</h1>
+        <div className="flex items-center gap-2">
+        <FileCode2 className="h-6 w-6 text-indigo-500" />
+        <h1 className="text-2xl font-semibold text-gray-900">Developer Reports</h1>
+          <span className="bg-gray-100 px-2 py-1 rounded text-sm text-gray-600">
+            {MOCK_TASKS.length} REQUESTS
+          </span>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            onClick={handleRefresh}
+          >
+            <RefreshCcw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
+          <Button
+            onClick={() => setIsModalOpen(true)}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Create
+          </Button>
         </div>
       </div>
+      <p className="text-gray-500">You can create automatic tasks in different types.</p>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center space-x-2">
-            <GitCommit className="h-5 w-5 text-blue-500" />
-            <h2 className="text-lg font-medium text-gray-900">Total Commits</h2>
-          </div>
-          <p className="mt-2 text-3xl font-bold text-gray-900">254</p>
-          <p className="text-sm text-gray-500">Last 7 days</p>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center space-x-2">
-            <GitPullRequest className="h-5 w-5 text-green-500" />
-            <h2 className="text-lg font-medium text-gray-900">Open PRs</h2>
-          </div>
-          <p className="mt-2 text-3xl font-bold text-gray-900">20</p>
-          <p className="text-sm text-gray-500">Awaiting review</p>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center space-x-2">
-            <GitBranch className="h-5 w-5 text-purple-500" />
-            <h2 className="text-lg font-medium text-gray-900">Active Branches</h2>
-          </div>
-          <p className="mt-2 text-3xl font-bold text-gray-900">13</p>
-          <p className="text-sm text-gray-500">Currently active</p>
-        </div>
-      </div>
-
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Commit Activity</h2>
-        <div className="h-64">
-          <Line data={activityData} options={chartOptions} />
-        </div>
-      </div>
-
-      <DateTimeFilters 
-        onExport={handleExportPDF}
-        onExportExcel={handleExportExcel}
-        onSearch={() => {}}
-      />
-
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="p-4 border-b border-gray-200">
-          <div className="flex space-x-4">
-            <select
-              value={selectedImpact}
-              onChange={(e) => setSelectedImpact(e.target.value)}
-              className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            >
-              <option value="all">All Impact Levels</option>
-              <option value="high">High Impact</option>
-              <option value="medium">Medium Impact</option>
-              <option value="low">Low Impact</option>
-            </select>
-          </div>
-        </div>
-
+      <div className="bg-white shadow rounded-lg">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Developer</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Commits</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pull Requests</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code Reviews</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merges</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Impact</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Activity</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applicator</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Device</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Condition</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {MOCK_REPORTS.map((report) => (
-                <tr key={report.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{report.developer}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{report.commits}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{report.pullRequests}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{report.codeReviews}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{report.merges}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      report.impact === 'High' ? 'bg-green-100 text-green-800' :
-                      report.impact === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
-                      {report.impact}
-                    </span>
-                  </td>
+              {data.map((task) => (
+                <tr key={task.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{task.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{task.applicator}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{task.device}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{task.condition}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{task.start}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{task.end}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(report.lastActivity).toLocaleString()}
+                    <Button
+                    variant='ghost'
+                    onClick={() => deleteHandler(task.id)}
+                    >
+                      delete
+                    </Button>
                   </td>
+                  
+                
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          resetForm();
+        }}
+        title="Create New Task"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Device</label>
+            <Dropdown
+              value={selectedDevice}
+              onChange={(value) => {
+                setSelectedDevice(value);
+                setIsDeviceDropdownOpen(false);
+              }}
+              options={DEVICES}
+              placeholder="Select Device"
+              isOpen={isDeviceDropdownOpen}
+              onToggle={() => setIsDeviceDropdownOpen(!isDeviceDropdownOpen)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+            <Dropdown
+              value={selectedType}
+              onChange={(value) => {
+                setSelectedType(value);
+                setIsTypeDropdownOpen(false);
+              }}
+              options={TYPES}
+              placeholder="Select Type"
+              isOpen={isTypeDropdownOpen}
+              onToggle={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+            <Input
+              type="datetime-local"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
+            <Input
+              type="datetime-local"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+            />
+          </div>
+          <div className="flex justify-end gap-2 mt-6">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setIsModalOpen(false);
+                resetForm();
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleCreate}>
+              Create Task
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
