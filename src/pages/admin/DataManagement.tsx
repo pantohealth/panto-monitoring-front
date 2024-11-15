@@ -84,6 +84,7 @@ export function DataManagementPage() {
   const [endTime, setEndTime] = useState('');
   const [isDeviceDropdownOpen, setIsDeviceDropdownOpen] = useState(false);
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
+  const [data, setData] = useState<Task[]>(MOCK_TASKS);
 
   const handleRefresh = () => {
     toast.success('Data refreshed successfully');
@@ -95,7 +96,18 @@ export function DataManagementPage() {
       return;
     }
 
+    const newEntry: Task = {
+    id: data.length + 1,
+    applicator: data.applicator,
+    type: selectedType,
+    device: selectedDevice,
+    start: startTime,
+    end: endTime,
+    status: 'Done' ,
+    };
+
     // Add new task logic here
+    setData(prevData => [...prevData, newEntry]);
     toast.success('Task created successfully');
     setIsModalOpen(false);
     resetForm();
@@ -151,7 +163,7 @@ export function DataManagementPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {MOCK_TASKS.map((task) => (
+              {data.map((task) => (
                 <tr key={task.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{task.applicator}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{task.type}</td>

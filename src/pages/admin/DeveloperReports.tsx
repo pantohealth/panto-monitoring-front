@@ -84,28 +84,44 @@ const MOCK_TASKS: Task[] = [
 
 const DEVICES = ['Leipzig 3', 'Leipzig 2', 'Leipzig 1'];
 const TYPES = ['Add', 'Remove'];
+const CONDITIONS = ['con1', 'con2','con3'];
 
 export function DeveloperReportsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState('');
+  const [selectedCondition, setSelectedCondition] = useState('');
   const [selectedType, setSelectedType] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [isDeviceDropdownOpen, setIsDeviceDropdownOpen] = useState(false);
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
-  const [data, setData] = useState(MOCK_TASKS);
+  const [isConditionDropdownOpen, setIsConditionDropdownOpen] = useState(false);
+  const [data, setData] = useState<Task[]>(MOCK_TASKS);
 
   const handleRefresh = () => {
     toast.success('Data refreshed successfully');
   };
 
   const handleCreate = () => {
-    if (!selectedDevice || !selectedType || !startTime || !endTime) {
+    if (!selectedDevice || !selectedType || !startTime || !endTime || !selectedCondition) {
       toast.error('Please fill in all fields');
       return;
     }
 
+    const newEntry: Task = {
+      id: data.length + 1,
+      applicator: data.applicator,
+      name: data.name,
+      type: selectedType,
+      device: selectedDevice,
+      condition: selectedCondition,
+      start: startTime,
+      end: endTime,
+      };
+
+  
     // Add new task logic here
+    setData(prevData => [...prevData, newEntry]);
     toast.success('Task created successfully');
     setIsModalOpen(false);
     resetForm();
@@ -255,6 +271,20 @@ export function DeveloperReportsPage() {
               placeholder="Select Type"
               isOpen={isTypeDropdownOpen}
               onToggle={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Condition</label>
+            <Dropdown
+              value={selectedCondition}
+              onChange={(value) => {
+                setSelectedCondition(value);
+                setIsConditionDropdownOpen(false);
+              }}
+              options={CONDITIONS}
+              placeholder="Select Condition"
+              isOpen={isConditionDropdownOpen}
+              onToggle={() => setIsConditionDropdownOpen(!isConditionDropdownOpen)}
             />
           </div>
           <div>
