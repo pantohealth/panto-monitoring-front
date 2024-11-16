@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DateTimeFilters } from '../../components/filters/DateTimeFilters';
 import { exportToPDF, exportToExcel } from '../../utils/export';
 import { Dropdown } from '../../components/ui/Dropdown';
+import ReactPaginate from 'react-paginate';
 
 interface Warning {
   id: number;
@@ -56,7 +57,7 @@ const MOCK_WARNINGS: Warning[] = [
   }
 ];
 
-const ITEMS_PER_PAGE = 2; // Number of warnings to display per page
+const ITEMS_PER_PAGE = 2;
 
 export function AdminWarningsPage() {
   const [selectedType, setSelectedType] = useState<string>('');
@@ -67,15 +68,35 @@ export function AdminWarningsPage() {
   const [isSideDropdownOpen, setIsSideDropdownOpen] = useState(false);
   const [isDeviceDropdownOpen, setIsDeviceDropdownOpen] = useState(false);
   const [isActionDropdownOpen, setIsActionDropdownOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageCount, setPageCount] = useState(0);
+  const [currentItems, setCurrentItems] = useState<Warning[]>([]);
+  const [filteredWarnings, setFilteredWarnings] = useState<Warning[]>(MOCK_WARNINGS);
 
-  const filteredWarnings = MOCK_WARNINGS.filter(warning => {
-    if (selectedType && warning.type !== selectedType) return false;
-    if (selectedSide && warning.side !== selectedSide) return false;
-    if (selectedDevice && warning.device !== selectedDevice) return false;
-    if (selectedAction && warning.action !== selectedAction) return false;
-    return true;
-  });
+  // Update filtered warnings when filters change
+  useEffect(() => {
+    const filtered = MOCK_WARNINGS.filter(warning => {
+      if (selectedType && warning.type !== selectedType) return false;
+      if (selectedSide && warning.side !== selectedSide) return false;
+      if (selectedDevice && warning.device !== selectedDevice) return false;
+      if (selectedAction && warning.action !== selectedAction) return false;
+      return true;
+    });
+    setFilteredWarnings(filtered);
+    setCurrentPage(0); // Reset to first page when filters change
+  }, [selectedType, selectedSide, selectedDevice, selectedAction]);
+
+  // Update current items when page changes or filtered warnings change
+  useEffect(() => {
+    const offset = currentPage * ITEMS_PER_PAGE;
+    const endOffset = offset + ITEMS_PER_PAGE;
+    setCurrentItems(filteredWarnings.slice(offset, endOffset));
+    setPageCount(Math.ceil(filteredWarnings.length / ITEMS_PER_PAGE));
+  }, [currentPage, filteredWarnings]);
+
+  const handlePageChange = ({ selected }: { selected: number }) => {
+    setCurrentPage(selected);
+  };
 
   const handleExportPDF = () => {
     exportToPDF('System Warnings Report', filteredWarnings, [
@@ -102,21 +123,6 @@ export function AdminWarningsPage() {
       'details'
     ]);
   };
-
-    // Pagination logic
-    const totalPages = Math.ceil(filteredWarnings.length / ITEMS_PER_PAGE);
-    const paginatedWarnings = filteredWarnings.slice(
-      (currentPage - 1) * ITEMS_PER_PAGE,
-      currentPage * ITEMS_PER_PAGE
-    );
-  
-    const handlePrevious = () => {
-      if (currentPage > 1) setCurrentPage((prevPage) => prevPage - 1);
-    };
-  
-    const handleNext = () => {
-      if (currentPage < totalPages) setCurrentPage((prevPage) => prevPage + 1);
-    };
 
   return (
     <div className="space-y-6">
@@ -181,7 +187,7 @@ export function AdminWarningsPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredWarnings.map((warning) => (
+              {currentItems.map((warning) => (
                 <tr key={warning.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{warning.time}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><span className='text-xs'>from</span> {warning.type}</td>
@@ -201,34 +207,23 @@ export function AdminWarningsPage() {
           </table>
         </div>
 
-        <div className="px-6 py-4 border-t border-gray-200">
-          <div className="flex items-center justify-between">
-            <button
-              className={`px-3 py-1 border rounded text-sm ${
-                currentPage === 1 ? 'text-gray-400' : 'text-gray-600 hover:bg-gray-50'
-              }`}
-              onClick={handlePrevious}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </button>
-            <div className="flex items-center space-x-2">
-              <span className="px-3 py-1 bg-blue-500 text-white rounded">
-                {currentPage}
-              </span>
-              <span className="text-gray-600">of {totalPages}</span>
-            </div>
-            <button
-              className={`px-3 py-1 border rounded text-sm ${
-                currentPage === totalPages
-                  ? 'text-gray-400'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
-              onClick={handleNext}
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </button>
+        <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
+          <ReactPaginate
+            previousLabel="Previous"
+            nextLabel="Next"
+            pageCount={pageCount}
+            onPageChange={handlePageChange}
+            containerClassName="flex items-center space-x-2"
+            previousClassName="px-3 py-1 rounded border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            nextClassName="px-3 py-1 rounded border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            pageClassName="px-3 py-1 rounded border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            breakClassName="px-3 py-1 text-gray-500"
+            activeClassName="bg-blue-500 text-white border-blue-500 hover:bg-blue-600"
+            disabledClassName="opacity-50 cursor-not-allowed"
+            forcePage={currentPage}
+          />
+          <div className="text-sm text-gray-500">
+            Showing {currentItems.length} of {filteredWarnings.length} entries
           </div>
         </div>
       </div>

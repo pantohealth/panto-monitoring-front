@@ -3,6 +3,7 @@ import { DateTimeFilters } from '../../components/filters/DateTimeFilters';
 import { exportToPDF, exportToExcel } from '../../utils/export';
 import { FootprintsIcon, User } from 'lucide-react';
 import { Dropdown } from '../../components/ui/Dropdown';
+import ReactPaginate from 'react-paginate';
 
 const MOCK_JOURNEYS = [
   {
@@ -38,23 +39,42 @@ const AVAILABLE_INTERACTIONS = [
   'Add User',
 ];
 
+const ITEMS_PER_PAGE = 2;
+
 export function UserJourneyPage() {
   const [selectedInteractoin, setSelectedInteractoin] = useState<string>('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [filteredInteractions, setFilteredInteractions] = useState(MOCK_JOURNEYS);
+  const [pageCount, setPageCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [currentItems, setCurrentItems] = useState(MOCK_JOURNEYS);
 
   useEffect(() => {
     handleInteractionSelect(selectedInteractoin);
   }, [selectedInteractoin]);
 
+  useEffect(() => {
+    const offset = currentPage * ITEMS_PER_PAGE;
+    const endOffset = offset + ITEMS_PER_PAGE;
+    setCurrentItems(filteredInteractions.slice(offset, endOffset));
+    setPageCount(Math.ceil(filteredInteractions.length / ITEMS_PER_PAGE));
+  }, [currentPage, filteredInteractions]);
+
   const handleInteractionSelect = (inter: string) => {
     setSelectedInteractoin(inter);
     setIsDropdownOpen(false);
     if (inter) {
-      setFilteredInteractions(MOCK_JOURNEYS.filter(c => c.keyinteraction === inter));
+      const filtered = MOCK_JOURNEYS.filter(c => c.keyinteraction === inter);
+      setFilteredInteractions(filtered);
+      setCurrentPage(0);
     } else {
       setFilteredInteractions(MOCK_JOURNEYS);
+      setCurrentPage(0);
     }
+  };
+
+  const handlePageChange = ({ selected }: { selected: number }) => {
+    setCurrentPage(selected);
   };
 
   const handleExportPDF = () => {
@@ -115,7 +135,7 @@ export function UserJourneyPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredInteractions.map((journey) => (
+              {currentItems.map((journey) => (
                 <tr key={journey.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -135,12 +155,30 @@ export function UserJourneyPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{journey.time}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{journey.keyinteraction}</td>
-              
-                    
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+
+        <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
+          <ReactPaginate
+            previousLabel="Previous"
+            nextLabel="Next"
+            pageCount={pageCount}
+            onPageChange={handlePageChange}
+            containerClassName="flex items-center space-x-2"
+            previousClassName="px-3 py-1 rounded border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            nextClassName="px-3 py-1 rounded border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            pageClassName="px-3 py-1 rounded border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            breakClassName="px-3 py-1 text-gray-500"
+            activeClassName="bg-blue-500 text-white border-blue-500 hover:bg-blue-600"
+            disabledClassName="opacity-50 cursor-not-allowed"
+            forcePage={currentPage}
+          />
+          <div className="text-sm text-gray-500">
+            Showing {currentItems.length} of {filteredInteractions.length} entries
+          </div>
         </div>
       </div>
     </div>
