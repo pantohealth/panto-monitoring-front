@@ -176,7 +176,7 @@ export function UserJourneyPage() {
             disabledClassName="opacity-50 cursor-not-allowed"
             forcePage={currentPage}
           />
-          <div className="text-sm text-gray-500">
+          <div className="md:text-sm text-[10px] px-2 text-gray-500">
             Showing {currentItems.length} of {filteredInteractions.length} entries
           </div>
         </div>

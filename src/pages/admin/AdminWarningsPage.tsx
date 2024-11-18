@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+
 import { DateTimeFilters } from '../../components/filters/DateTimeFilters';
 import { exportToPDF, exportToExcel } from '../../utils/export';
 import { Dropdown } from '../../components/ui/Dropdown';
@@ -127,7 +128,8 @@ export function AdminWarningsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900">Warnings</h1>
+        
+        <h1 className="text-2xl font-semibold text-gray-900">Warnings page</h1>
       </div>
 
       <DateTimeFilters 
@@ -222,7 +224,7 @@ export function AdminWarningsPage() {
             disabledClassName="opacity-50 cursor-not-allowed"
             forcePage={currentPage}
           />
-          <div className="text-sm text-gray-500">
+          <div className="md:text-sm text-[10px] px-2 text-gray-500">
             Showing {currentItems.length} of {filteredWarnings.length} entries
           </div>
         </div>

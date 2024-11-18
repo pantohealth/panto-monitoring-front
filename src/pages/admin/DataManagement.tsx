@@ -122,15 +122,15 @@ export function DataManagementPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="md:flex md:items-center md:justify-between">
         <div className="flex items-center gap-2">
           <Database className="h-6 w-6 text-indigo-500" />
-          <h1 className="text-2xl font-semibold text-gray-900">Data Management</h1>
-          <span className="bg-gray-100 px-2 py-1 rounded text-sm text-gray-600">
+          <h1 className="md:text-2xl font-semibold text-gray-900">Data Management</h1>
+          <span className="bg-gray-100 px-2 py-1 rounded whitespace-nowrap md:text-sm text-xs text-gray-600">
             {MOCK_TASKS.length} REQUESTS
           </span>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 mt-2 md:mt-0">
           <Button
             variant="ghost"
             onClick={handleRefresh}
@@ -146,7 +146,7 @@ export function DataManagementPage() {
           </Button>
         </div>
       </div>
-      <p className="text-gray-500">You can create automatic tasks in different types.</p>
+      <p className="text-gray-500 tracking-tighter md:tracking-normal">You can create automatic tasks in different types.</p>
 
       <div className="bg-white shadow rounded-lg">
         <div className="overflow-x-auto">

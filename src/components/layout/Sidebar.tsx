@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { ChevronDown,Users, Monitor, Building2, Activity, LogOut,  Layers3  , LayoutDashboard } from 'lucide-react';
+import { ChevronDown,Users, Monitor, Building2, Activity, LogOut,  Layers3, LayoutDashboard} from 'lucide-react';
 import { cn } from '../../lib/utils';
 import toast from 'react-hot-toast';
 
@@ -35,8 +35,11 @@ const navigation = [
  
 ];
 
+interface SidebarProps {
+  isOpen: boolean,
+}
 
-export function Sidebar() {
+export function Sidebar({isOpen}:SidebarProps) {
   const navigate = useNavigate();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -56,7 +59,8 @@ export function Sidebar() {
   };
 
   return (
-    <div className="flex h-full w-64 flex-col bg-gray-900">
+    <div className={`${isOpen ? 'fixed' : 'hidden'} md:flex flex-col md:overflow-auto overflow-scroll h-full w-64 bg-gray-900`}>
+    
       <div className="flex h-16 items-center px-4">
         <h1 className="text-xl font-bold text-white">Panto Admin</h1>
       </div>
@@ -130,7 +134,7 @@ export function Sidebar() {
           </div>
         ))}
       </nav>
-      <div className="flex-shrink-0 flex border-t border-gray-800 p-4">
+      <div className="flex-shrink-0 flex w-full border-t border-gray-800 p-4 md:mb-0 mb-12 mt-auto">
         <button
           className="group flex w-full items-center px-2 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 hover:text-white"
           onClick={handleLogout}

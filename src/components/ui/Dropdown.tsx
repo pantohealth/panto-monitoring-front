@@ -19,12 +19,12 @@ export function Dropdown({
   onToggle,
 }: DropdownProps) {
   return (
-    <div className="relative w-56">
+    <div className="relative md:w-56 w-20">
       <button
         onClick={onToggle}
-        className="w-full px-4 py-2 text-left bg-white border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+        className="w-full px-2 py-2 text-left bg-white border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
       >
-        <span className="flex items-center justify-between text-sm">
+        <span className="flex items-center justify-between md:text-sm text-[11px]">
           <span className={cn(!value && 'text-gray-400')}>
             {value || placeholder}
           </span>
@@ -43,7 +43,7 @@ export function Dropdown({
                 onToggle();
               }}
               className={cn(
-                'block w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors duration-150',
+                'block w-full px-2 py-2 text-left md:text-sm text-[11px] hover:bg-gray-50 transition-colors duration-150',
                 !value && 'bg-gray-50 text-blue-600'
               )}
             >
@@ -57,7 +57,7 @@ export function Dropdown({
                   onToggle();
                 }}
                 className={cn(
-                  'block w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors duration-150',
+                  'block w-full px-2 py-2 text-left md:text-sm text-[11px] hover:bg-gray-50 transition-colors duration-150',
                   value === option && 'bg-gray-50 text-blue-600'
                 )}
               >
