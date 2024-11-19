@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import TablePagination from "@mui/material/TablePagination";
+import { FootprintsIcon, User } from 'lucide-react';
+
 import { DateTimeFilters } from '../../components/filters/DateTimeFilters';
 import { exportToPDF, exportToExcel } from '../../utils/export';
-import { FootprintsIcon, User } from 'lucide-react';
 import { Dropdown } from '../../components/ui/Dropdown';
-import ReactPaginate from 'react-paginate';
+
 
 const MOCK_JOURNEYS = [
   {
@@ -39,26 +41,18 @@ const AVAILABLE_INTERACTIONS = [
   'Add User',
 ];
 
-const ITEMS_PER_PAGE = 2;
 
 export function UserJourneyPage() {
   const [selectedInteractoin, setSelectedInteractoin] = useState<string>('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [filteredInteractions, setFilteredInteractions] = useState(MOCK_JOURNEYS);
-  const [pageCount, setPageCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [currentItems, setCurrentItems] = useState(MOCK_JOURNEYS);
+  const [page, setPage] = useState(0); 
+  const [rowsPerPage, setRowsPerPage] = useState(10); // Items per page
 
   useEffect(() => {
     handleInteractionSelect(selectedInteractoin);
   }, [selectedInteractoin]);
 
-  useEffect(() => {
-    const offset = currentPage * ITEMS_PER_PAGE;
-    const endOffset = offset + ITEMS_PER_PAGE;
-    setCurrentItems(filteredInteractions.slice(offset, endOffset));
-    setPageCount(Math.ceil(filteredInteractions.length / ITEMS_PER_PAGE));
-  }, [currentPage, filteredInteractions]);
 
   const handleInteractionSelect = (inter: string) => {
     setSelectedInteractoin(inter);
@@ -66,16 +60,26 @@ export function UserJourneyPage() {
     if (inter) {
       const filtered = MOCK_JOURNEYS.filter(c => c.keyinteraction === inter);
       setFilteredInteractions(filtered);
-      setCurrentPage(0);
     } else {
       setFilteredInteractions(MOCK_JOURNEYS);
-      setCurrentPage(0);
     }
   };
 
-  const handlePageChange = ({ selected }: { selected: number }) => {
-    setCurrentPage(selected);
-  };
+
+const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage:number) => {
+  setPage(newPage);
+};
+        
+// Handle rows per page change
+const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  setRowsPerPage(parseInt(event.target.value, 10));
+  setPage(0); // Reset to the first page
+};
+      
+// Paginated data
+const paginatedUsers = filteredInteractions.
+slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
 
   const handleExportPDF = () => {
     exportToPDF('User Journey Report', filteredInteractions, [
@@ -135,7 +139,7 @@ export function UserJourneyPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {currentItems.map((journey) => (
+              {paginatedUsers.map((journey) => (
                 <tr key={journey.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -162,23 +166,16 @@ export function UserJourneyPage() {
         </div>
 
         <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
-          <ReactPaginate
-            previousLabel="Previous"
-            nextLabel="Next"
-            pageCount={pageCount}
-            onPageChange={handlePageChange}
-            containerClassName="flex items-center space-x-2"
-            previousClassName="px-3 py-1 rounded border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            nextClassName="px-3 py-1 rounded border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            pageClassName="px-3 py-1 rounded border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            breakClassName="px-3 py-1 text-gray-500"
-            activeClassName="bg-blue-500 text-white border-blue-500 hover:bg-blue-600"
-            disabledClassName="opacity-50 cursor-not-allowed"
-            forcePage={currentPage}
-          />
-          <div className="md:text-sm text-[10px] px-2 text-gray-500">
-            Showing {currentItems.length} of {filteredInteractions.length} entries
-          </div>
+        <TablePagination
+          component="div"
+          count={filteredInteractions.length} // Total number of entries
+          page={page} // Current page
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage} // Entries per page
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[10, 25, 50, 100]} 
+          labelRowsPerPage="Entries per page"
+        />
         </div>
       </div>
     </div>

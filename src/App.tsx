@@ -23,7 +23,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/dashboard" element={<DashboardLayout />}>
-            <Route index element={<Navigate to="/dashboard/users" />} />
+            <Route index element={<Navigate to="/dashboard/users" replace/>} />
             <Route path="users" element={<UsersPage />} />
             <Route path="devices" element={<DevicesPage />} />
             <Route path="company" element={<CompanyPage />} />
@@ -38,7 +38,7 @@ function App() {
             <Route path="admin/developer" element={<DeveloperReportsPage />} />
             <Route path="admin/warnings" element={<AdminWarningsPage />} />
           </Route>
-          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/" element={<Navigate to="/login" replace/>} />
         </Routes>
       </BrowserRouter>
       <Toaster position="top-right" />

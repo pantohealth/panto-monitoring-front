@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
+import TablePagination from "@mui/material/TablePagination";
 
 import { DateTimeFilters } from '../../components/filters/DateTimeFilters';
 import { exportToPDF, exportToExcel } from '../../utils/export';
 import { Dropdown } from '../../components/ui/Dropdown';
-import ReactPaginate from 'react-paginate';
 
 interface Warning {
   id: number;
@@ -50,15 +50,13 @@ const MOCK_WARNINGS: Warning[] = [
     time: '2024/11/11 17:02',
     type: 'Ai',
     side: 'Backend',
-    device: 'Leipzig 3',
+    device: 'Leipzig 2',
     action: 'Remove',
     status: 'Unchecked',
     description: 'Duplicate Signal Event Data',
     details: '~'
   }
 ];
-
-const ITEMS_PER_PAGE = 2;
 
 export function AdminWarningsPage() {
   const [selectedType, setSelectedType] = useState<string>('');
@@ -69,10 +67,10 @@ export function AdminWarningsPage() {
   const [isSideDropdownOpen, setIsSideDropdownOpen] = useState(false);
   const [isDeviceDropdownOpen, setIsDeviceDropdownOpen] = useState(false);
   const [isActionDropdownOpen, setIsActionDropdownOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [pageCount, setPageCount] = useState(0);
-  const [currentItems, setCurrentItems] = useState<Warning[]>([]);
   const [filteredWarnings, setFilteredWarnings] = useState<Warning[]>(MOCK_WARNINGS);
+
+  const [page, setPage] = useState(0); 
+  const [rowsPerPage, setRowsPerPage] = useState(10); // Items per page
 
   // Update filtered warnings when filters change
   useEffect(() => {
@@ -84,20 +82,23 @@ export function AdminWarningsPage() {
       return true;
     });
     setFilteredWarnings(filtered);
-    setCurrentPage(0); // Reset to first page when filters change
   }, [selectedType, selectedSide, selectedDevice, selectedAction]);
 
-  // Update current items when page changes or filtered warnings change
-  useEffect(() => {
-    const offset = currentPage * ITEMS_PER_PAGE;
-    const endOffset = offset + ITEMS_PER_PAGE;
-    setCurrentItems(filteredWarnings.slice(offset, endOffset));
-    setPageCount(Math.ceil(filteredWarnings.length / ITEMS_PER_PAGE));
-  }, [currentPage, filteredWarnings]);
 
-  const handlePageChange = ({ selected }: { selected: number }) => {
-    setCurrentPage(selected);
+  
+  const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage:number):void => {
+    setPage(newPage);
   };
+  
+  // Handle rows per page change
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // Reset to the first page
+  };
+
+  // Paginated data
+  const paginatedWarnings = filteredWarnings.
+  slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const handleExportPDF = () => {
     exportToPDF('System Warnings Report', filteredWarnings, [
@@ -189,7 +190,7 @@ export function AdminWarningsPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {currentItems.map((warning) => (
+              {paginatedWarnings.map((warning) => (
                 <tr key={warning.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{warning.time}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><span className='text-xs'>from</span> {warning.type}</td>
@@ -210,23 +211,17 @@ export function AdminWarningsPage() {
         </div>
 
         <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
-          <ReactPaginate
-            previousLabel="Previous"
-            nextLabel="Next"
-            pageCount={pageCount}
-            onPageChange={handlePageChange}
-            containerClassName="flex items-center space-x-2"
-            previousClassName="px-3 py-1 rounded border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            nextClassName="px-3 py-1 rounded border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            pageClassName="px-3 py-1 rounded border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            breakClassName="px-3 py-1 text-gray-500"
-            activeClassName="bg-blue-500 text-white border-blue-500 hover:bg-blue-600"
-            disabledClassName="opacity-50 cursor-not-allowed"
-            forcePage={currentPage}
-          />
-          <div className="md:text-sm text-[10px] px-2 text-gray-500">
-            Showing {currentItems.length} of {filteredWarnings.length} entries
-          </div>
+        <TablePagination
+          component="div"
+          count={filteredWarnings.length} // Total number of entries
+          page={page} // Current page
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage} // Entries per page
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[10, 25, 50, 100]} 
+          labelRowsPerPage="Entries per page"
+        />
+          
         </div>
       </div>
     </div>

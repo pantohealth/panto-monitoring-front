@@ -1,12 +1,20 @@
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
-import { AlignJustify } from 'lucide-react';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { AlignJustify, LogOut } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 import { Sidebar } from './Sidebar';
 import MobileSidebar from './MobileSidebar';
 
 export function DashboardLayout() {
   const [isSidebarOpen, setSidebarOpen] = useState(false)
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    toast.success('Logged out successfully');
+    navigate('/login', {replace:true});
+  };
+
 
   const toggleSidebar = () => {
     setSidebarOpen(!isSidebarOpen);
@@ -25,8 +33,19 @@ export function DashboardLayout() {
       </div>
       <main className="flex-1 overflow-auto">
         <div onClick={toggleSidebar} className='md:hidden flex text-zinc-950-500 mt-6 px-4'><AlignJustify/></div>
-        <div className="py-4">
+        <div className="py-2">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
+            
+          <div className="flex-shrink-0 flex justify-end p-1">
+          <button
+            className="flex md:w-[10%] w-[100%] items-center py-2 pt-8 md:pt-2 md:p-2 text-md font-medium 
+            rounded-md md:hover:bg-slate-500/10 text-gray-800 transition-all"
+            onClick={handleLogout}
+          >
+            <LogOut className="mr-1 md:mr-2 h-5 w-5 flex-shrink-0" aria-hidden="true" />
+            Logout
+          </button>
+          </div>
             <Outlet />
           </div>
         </div>

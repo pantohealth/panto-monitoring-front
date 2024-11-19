@@ -43,7 +43,7 @@ export function Dropdown({
                 onToggle();
               }}
               className={cn(
-                'block w-full px-2 py-2 text-left md:text-sm text-[11px] hover:bg-gray-50 transition-colors duration-150',
+                'block w-full px-1 md:px-4 py-2 text-left md:text-sm text-[11px] hover:bg-gray-50 transition-colors duration-150',
                 !value && 'bg-gray-50 text-blue-600'
               )}
             >
@@ -57,7 +57,7 @@ export function Dropdown({
                   onToggle();
                 }}
                 className={cn(
-                  'block w-full px-2 py-2 text-left md:text-sm text-[11px] hover:bg-gray-50 transition-colors duration-150',
+                  'block w-full px-1 md:px-4 py-2 text-left md:text-sm text-[11px] hover:bg-gray-50 transition-colors duration-150',
                   value === option && 'bg-gray-50 text-blue-600'
                 )}
               >
