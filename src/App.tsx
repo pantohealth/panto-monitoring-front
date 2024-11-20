@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+
 import { LoginPage } from './pages/Login';
 import { DashboardLayout } from './components/layout/DashboardLayout';
 import { UsersPage } from './pages/Users';
@@ -39,6 +40,7 @@ function App() {
             <Route path="admin/warnings" element={<AdminWarningsPage />} />
           </Route>
           <Route path="/" element={<Navigate to="/login" replace/>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
       <Toaster position="top-right" />
