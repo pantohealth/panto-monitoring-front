@@ -38,8 +38,8 @@ npm run dev
 ```
 
 # Technologies Used
-React(vite)
-TypeScript
-React Query
-Tailwind CSS
-Material UI
+- React(vite)
+- TypeScript
+- React Query
+- Tailwind CSS
+- Material UI
