@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RefreshCcw, Plus, FileCode2, Trash2 } from 'lucide-react';
+import { RefreshCcw, Plus, FileCode2, Trash2, FileDown  } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { Dropdown } from '../../components/ui/Dropdown';
@@ -7,6 +7,7 @@ import { Input } from '../../components/ui/Input';
 import toast from 'react-hot-toast';
 import { DateTimeFilters } from '../../components/filters/DateTimeFilters';
 import { exportToExcel, exportToPDF } from '../../utils/export';
+import { api } from '../../lib/axios';
 
 interface Task {
   id: number;
@@ -97,6 +98,7 @@ export function DeveloperReportsPage() {
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
   const [isConditionDropdownOpen, setIsConditionDropdownOpen] = useState(false);
   const [data, setData] = useState<Task[]>(MOCK_TASKS);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handleRefresh = () => {
     toast.success('Data refreshed successfully');
@@ -165,10 +167,34 @@ export function DeveloperReportsPage() {
    setData(deleteTask)
   }
 
+  // const downloadExcelFile = (base64File:string, fileName:string) => {
+  //   const link = document.createElement("a");
+  //   link.href = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${base64File}`;
+  //   link.download = fileName;
+  //   document.body.appendChild(link);
+  //   link.click();
+  //   document.body.removeChild(link);
+  // };
+
+  // const downloadHandler = (id: number) => {
+  //   setIsDownloading(true)
+    
+  //   console.log(id)
+  //   api.getDeveloperReportById(id, res => {
+  //     if (res.status === 200) {
+  //       const base64File = res.data.base64File;
+  //       const fileName = "download.xlsx";
+
+  //       downloadExcelFile(base64File, fileName);
+
+  //       setIsDownloading(false);
+  // }
+
   return (
     <div className="space-y-6">
 
-      <DateTimeFilters onExport={handleExportPDF} onExportExcel={handleExportExcel} onSearch={() => {}} />
+      <DateTimeFilters onExport={handleExportPDF} 
+      onExportExcel={handleExportExcel} onSearch={() => {}} />
 
       <div className="md:flex md:items-center md:justify-between">
         <div className="flex items-center gap-2">
@@ -209,6 +235,7 @@ export function DeveloperReportsPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th> */}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -228,6 +255,17 @@ export function DeveloperReportsPage() {
                       <Trash2/>
                     </Button>
                   </td>
+                  {/* <td className="px-6 py-4 flex flex-col whitespace-nowrap text-sm text-gray-500">
+                    <Button
+                    variant='ghost'
+                    onClick={() => downloadHandler(task.id)}
+                    >
+                      <FileDown />
+                    {isDownloading && 
+                    <span className='text-xs text-center'>Downloading...</span>
+                    }
+                    </Button>
+                  </td> */}
                 </tr>
               ))}
             </tbody>
