@@ -7,7 +7,7 @@ import { Input } from '../../components/ui/Input';
 import toast from 'react-hot-toast';
 import { DateTimeFilters } from '../../components/filters/DateTimeFilters';
 import { exportToExcel, exportToPDF } from '../../utils/export';
-import { api } from '../../lib/axios';
+// import { api } from '../../lib/axios';
 
 interface Task {
   id: number;
@@ -98,7 +98,7 @@ export function DeveloperReportsPage() {
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
   const [isConditionDropdownOpen, setIsConditionDropdownOpen] = useState(false);
   const [data, setData] = useState<Task[]>(MOCK_TASKS);
-  const [isDownloading, setIsDownloading] = useState(false);
+  // const [isDownloading, setIsDownloading] = useState(false);
 
   const handleRefresh = () => {
     toast.success('Data refreshed successfully');
