@@ -254,6 +254,7 @@ export function DeveloperReportsPage() {
                     >
                       <Trash2/>
                     </Button>
+                    
                   </td>
                   {/* <td className="px-6 py-4 flex flex-col whitespace-nowrap text-sm text-gray-500">
                     <Button
