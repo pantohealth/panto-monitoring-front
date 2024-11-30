@@ -1,11 +1,16 @@
 export interface User {
-    id: number;
-    name: string;
-    company: string;
-    lastSeen: string;
+  _id: number,
+  username: string,
+  company: {id:number,name:string},
+  clicks: number,
+  email?: string,
+  lastOnline: string,
+  points:number[]
+  }
+
+export interface ExportUser {
+    username: string;
+    company: string; 
+    lastOnline: string;
     clicks: number;
-    onlineTime: number;
-    clickHistory: number[];
-    onlineHistory: number[];
-    timeLabels: string[];
   }

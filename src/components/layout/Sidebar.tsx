@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { ChevronDown,Users, Monitor, Building2, Activity, LogOut,  Layers3, LayoutDashboard} from 'lucide-react';
 import { cn } from '../../lib/utils';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '../../store/auth';
 
 const navigation = [
   { name: 'User Management', href: '/dashboard/users', icon: Users },
@@ -40,14 +41,16 @@ interface SidebarProps {
 }
 
 export function Sidebar({isOpen}:SidebarProps) {
-  const navigate = useNavigate();
+  
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isDropdownOpenDashboard, setIsDropdownOpenDashboard] = useState(false);
 
+  const logout = useAuthStore((state) => state.logout);
+  
   const handleLogout = () => {
+    logout()
     toast.success('Logged out successfully');
-    navigate('/login', {replace:true});
   };
 
   const toggleExpand = (name: string) => {

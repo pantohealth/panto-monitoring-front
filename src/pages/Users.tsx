@@ -4,44 +4,9 @@ import { exportToPDF, exportToExcel } from '../utils/export';
 import { UserActivityRow } from '../components/users/UserActivityRow';
 import { RadioGroup } from '../components/ui/RadioGroup';
 import { Dropdown } from '../components/ui/Dropdown';
-
-const MOCK_USERS = [
-  {
-    id: 1,
-    name: 'Davoud',
-    company: 'PANTOhealth',
-    lastSeen: '2024-03-15T10:30:00',
-    clicks: 43,
-    onlineTime: 5,
-    clickHistory: [0, 5, 10, 43, 20, 15],
-    onlineHistory: [0, 1, 3, 5, 2, 1],
-    timeLabels: ['1h', '2h', '3h', '4h', '5h', 'Now']
-  },
-  {
-    id: 2,
-    name: 'Samira',
-    company: 'PANTOhealth',
-    lastSeen: '2024-03-15T10:45:00',
-    clicks: 605,
-    onlineTime: 48,
-    clickHistory: [100, 200, 400, 605, 300, 250],
-    onlineHistory: [10, 20, 30, 48, 25, 15],
-    timeLabels: ['1h', '2h', '3h', '4h', '5h', 'Now']
-  },
-  {
-    id: 3,
-    name: 'Mety',
-    company: 'PANTOhealth',
-    lastSeen: '2024-03-14T23:30:00',
-    clicks: 239,
-    onlineTime: 24,
-    clickHistory: [50, 100, 150, 239, 180, 120],
-    onlineHistory: [5, 10, 15, 24, 18, 12],
-    timeLabels: ['1h', '2h', '3h', '4h', '5h', 'Now']
-  }
-];
-
-const AVAILABLE_COMPANIES = ['PANTOhealth', 'RailTech', 'TrainCorp'];
+import { UserActivity } from '../api/UserActivity';
+import { useQuery } from '@tanstack/react-query';
+import { ExportUser, User } from '../types/user';
 
 export function UsersPage() {
   const [selectedMetric, setSelectedMetric] = useState<'clicks' | 'online'>('clicks');
@@ -50,35 +15,45 @@ export function UsersPage() {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isCompanyDropdownOpen, setIsCompanyDropdownOpen] = useState(false);
 
-  const filteredUsers = MOCK_USERS.filter(user => {
-    if (selectedUser && user.name !== selectedUser) return false;
-    if (selectedCompany && user.company !== selectedCompany) return false;
+ 
+
+  const {data,isPending,error} = useQuery<User[], Error>({
+      queryKey:['users'],
+      queryFn: UserActivity.getUsersActivity,
+      // refetchInterval:30000 //30sec
+    })
+
+  //extract company name from data  
+  const companyName = [...new Set(data?.map(data => data.company.name))].filter(item => item)
+   
+  const filteredUsers = data?.filter(user => {
+    if (selectedUser && user.username !== selectedUser) return false;
+    if (selectedCompany && user.company.name !== selectedCompany) return false;
     return true;
   });
 
   const handleExportPDF = () => {
-    const exportData = filteredUsers.map(user => ({
-      name: user.name,
-      company: user.company,
-      lastSeen: new Date(user.lastSeen).toLocaleString(),
+    const exportData: ExportUser[] = (filteredUsers || [])?.map(user => ({
+      username: user.username,
+      company:  user.company.name || "Unknown",
+      lastOnline: new Date(user.lastOnline).toLocaleString(),
       clicks: user.clicks,
-      onlineTime: `${user.onlineTime}h`
     }));
 
-    exportToPDF('User Activity Report', exportData, ['name', 'company', 'lastSeen', 'clicks', 'onlineTime']);
+    exportToPDF('User Activity Report', exportData, ['username', 'company', 'lastOnline', 'clicks']);
   };
 
   const handleExportExcel = () => {
-    const exportData = filteredUsers.map(user => ({
-      name: user.name,
-      company: user.company,
-      lastSeen: new Date(user.lastSeen).toLocaleString(),
+    const exportData: ExportUser[] = (filteredUsers || [])?.map(user => ({
+      username: user.username,
+      company: user.company.name || "Unknown",
+      lastOnline: new Date(user.lastOnline).toLocaleString(),
       clicks: user.clicks,
-      onlineTime: `${user.onlineTime}h`
     }));
 
-    exportToExcel('User Activity Report', exportData, ['name', 'company', 'lastSeen', 'clicks', 'onlineTime']);
+    exportToExcel('User Activity Report', exportData, ['username', 'company', 'lastOnline', 'clicks']);
   };
+
 
   return (
     <div className="space-y-6">
@@ -98,7 +73,7 @@ export function UsersPage() {
             <Dropdown
               value={selectedUser}
               onChange={setSelectedUser}
-              options={MOCK_USERS.map(user => user.name)}
+              options={data?.map(user => user.username) || []}
               placeholder="Select User"
               isOpen={isUserDropdownOpen}
               onToggle={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
@@ -106,7 +81,7 @@ export function UsersPage() {
             <Dropdown
               value={selectedCompany}
               onChange={setSelectedCompany}
-              options={AVAILABLE_COMPANIES}
+              options={companyName}
               placeholder="Select Company"
               isOpen={isCompanyDropdownOpen}
               onToggle={() => setIsCompanyDropdownOpen(!isCompanyDropdownOpen)}
@@ -121,10 +96,18 @@ export function UsersPage() {
             onChange={(value) => setSelectedMetric(value as 'clicks' | 'online')}
           />
         </div>
+        
 
         <div className="overflow-x-auto">
+          <div className="max-h-[calc(100vh-18rem)] overflow-y-auto scrollbar-thin 
+          scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+          <div className='flex flex-col'>
+          {/* loading */}
+          {isPending && <p className='loader mx-auto my-10 w-full h-full'></p>}
+          {/* Error */}
+          {error && <p className='loader items-center  mx-auto my-10 w-full h-full'>Somthing Went Wrong,Please Try again.</p>}
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 sticky top-0 z-10">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Username
@@ -147,15 +130,17 @@ export function UsersPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredUsers.map((user) => (
+              {filteredUsers?.map((user) => (
                 <UserActivityRow
-                  key={user.id}
+                  key={user._id}
                   user={user}
                   selectedMetric={selectedMetric}
                 />
               ))}
             </tbody>
           </table>
+          </div>  
+        </div>
         </div>
       </div>
     </div>

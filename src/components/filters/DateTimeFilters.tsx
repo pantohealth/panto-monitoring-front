@@ -1,24 +1,28 @@
 import { useState } from 'react';
-import { useAtom } from 'jotai';
-import { filterAtom, type FilterState } from '../../store/filters';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Search, Download, FileSpreadsheet, Clock, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useFilterStore } from '../../store/filters';
 
 interface DateTimeFiltersProps {
   onExport: () => void;
   onExportExcel?: () => void;
-  onSearch: (filters: FilterState) => void;
+  onSearch: (filters: {
+    fromDateTime: string;
+    toDateTime: string;
+    exactDateTime: string;
+    isExactSearch: boolean;
+  }) => void;
 }
 
 export function DateTimeFilters({ onExport, onExportExcel, onSearch }: DateTimeFiltersProps) {
-  const [filters, setFilters] = useAtom(filterAtom);
   const [hasSearched, setHasSearched] = useState(false);
-
+  const filters = useFilterStore();
+  
   const handleSearch = () => {
     if (filters.isExactSearch && !filters.exactDateTime) {
-      toast.error('Please enter an exact date/time for precise search');
+      toast.error('Please enter an exact date/time for exact search');
       return;
     }
 
@@ -29,32 +33,31 @@ export function DateTimeFilters({ onExport, onExportExcel, onSearch }: DateTimeF
     }
 
     setHasSearched(true);
-    onSearch(filters);
+    onSearch({
+      fromDateTime: filters.fromDateTime,
+      toDateTime: filters.toDateTime,
+      exactDateTime: filters.exactDateTime,
+      isExactSearch: filters.isExactSearch
+    });
   };
 
   const toggleSearchMode = () => {
-    setFilters(prev => ({
-      ...prev,
-      isExactSearch: !prev.isExactSearch,
+    filters.setFilters({
+      isExactSearch: !filters.isExactSearch,
       fromDateTime: '',
       toDateTime: '',
       exactDateTime: ''
-    }));
+    });
     setHasSearched(false);
   };
 
   const clearDates = () => {
-    setFilters(prev => ({
-      ...prev,
-      fromDateTime: '',
-      toDateTime: '',
-      exactDateTime: ''
-    }));
+    filters.resetFilters();
     onSearch({
-      ...filters,
       fromDateTime: '',
       toDateTime: '',
-      exactDateTime: ''
+      exactDateTime: '',
+      isExactSearch: false
     });
     setHasSearched(false);
   };
@@ -93,10 +96,7 @@ export function DateTimeFilters({ onExport, onExportExcel, onSearch }: DateTimeF
               type="datetime-local"
               label="Exact Date/Time"
               value={filters.exactDateTime}
-              onChange={(e) => setFilters(prev => ({
-                ...prev,
-                exactDateTime: e.target.value
-              }))}
+              onChange={(e) => filters.setFilters({ exactDateTime: e.target.value })}
             />
           </div>
         ) : (
@@ -106,10 +106,7 @@ export function DateTimeFilters({ onExport, onExportExcel, onSearch }: DateTimeF
                 type="datetime-local"
                 label="From Date/Time"
                 value={filters.fromDateTime}
-                onChange={(e) => setFilters(prev => ({
-                  ...prev,
-                  fromDateTime: e.target.value
-                }))}
+                onChange={(e) => filters.setFilters({ fromDateTime: e.target.value })}
               />
             </div>
             <div>
@@ -117,10 +114,7 @@ export function DateTimeFilters({ onExport, onExportExcel, onSearch }: DateTimeF
                 type="datetime-local"
                 label="To Date/Time"
                 value={filters.toDateTime}
-                onChange={(e) => setFilters(prev => ({
-                  ...prev,
-                  toDateTime: e.target.value
-                }))}
+                onChange={(e) => filters.setFilters({ toDateTime: e.target.value })}
               />
             </div>
           </>
@@ -140,13 +134,15 @@ export function DateTimeFilters({ onExport, onExportExcel, onSearch }: DateTimeF
             <Download className="w-4 h-4 mr-2" />
             PDF
           </Button>
-          <Button
-            variant="secondary"
-            onClick={onExportExcel}
-          >
-            <FileSpreadsheet className="w-4 h-4 mr-2" />
-            Excel
-          </Button>
+          {onExportExcel && (
+            <Button
+              variant="secondary"
+              onClick={onExportExcel}
+            >
+              <FileSpreadsheet className="w-4 h-4 mr-2" />
+              Excel
+            </Button>
+          )}
         </div>
       </div>
     </div>

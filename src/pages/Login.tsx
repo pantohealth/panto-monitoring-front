@@ -1,9 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { useMutation } from '@tanstack/react-query';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '../store/auth';
+import { loginApi } from '../api/Login';
 
 interface LoginForm {
   email: string;
@@ -14,24 +17,29 @@ export function LoginPage() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<LoginForm>();
 
   const navigate = useNavigate();
+  const setAuth = useAuthStore((state) => state.setAuth);
 
-  const onSubmit = async (data: LoginForm) => {
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+  const loginMutation = useMutation({
+    mutationFn: loginApi.login,
+    onSuccess: (data) => {
+      const token = data.token;
+      localStorage.setItem('token', token);
+      setAuth({ token, isAuthenticated: true });
+      toast.success('Successfully logged in!');
+      navigate('/dashboard',{replace:true});
       
-      // In a real app, you would validate credentials here
-      if (data.email && data.password) {
-        toast.success('Successfully logged in!');
-        navigate('/dashboard');
-      }
-    } catch (error) {
-      toast.error('Failed to login. Please try again.');
-    }
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to login. Please try again.');
+    },
+  });
+
+  const onSubmit = (data: LoginForm) => {
+    loginMutation.mutate(data);
   };
 
   return (
@@ -77,7 +85,7 @@ export function LoginPage() {
           <Button
             type="submit"
             className="w-full"
-            isLoading={isSubmitting}
+            isLoading={loginMutation.isPending}
           >
             Sign in
           </Button>

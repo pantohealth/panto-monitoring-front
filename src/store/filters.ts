@@ -1,15 +1,24 @@
-import { atom } from 'jotai';
+import { create } from 'zustand';
 
-export interface FilterState {
+interface FilterState {
   fromDateTime: string;
   toDateTime: string;
   exactDateTime: string;
   isExactSearch: boolean;
+  setFilters: (filters: Partial<Omit<FilterState, 'setFilters' | 'resetFilters'>>) => void;
+  resetFilters: () => void;
 }
 
-export const filterAtom = atom<FilterState>({
+export const useFilterStore = create<FilterState>((set) => ({
   fromDateTime: '',
   toDateTime: '',
   exactDateTime: '',
   isExactSearch: false,
-});
+  setFilters: (filters) => set((state) => ({ ...state, ...filters })),
+  resetFilters: () => set({
+    fromDateTime: '',
+    toDateTime: '',
+    exactDateTime: '',
+    isExactSearch: false
+  })
+}));
