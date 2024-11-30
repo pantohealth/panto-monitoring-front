@@ -4,7 +4,7 @@ import { cn } from '../../lib/utils';
 interface DropdownProps {
   value: string;
   onChange: (value: string) => void;
-  options: string[];
+  options: string[] ;
   placeholder?: string;
   isOpen: boolean;
   onToggle: () => void;

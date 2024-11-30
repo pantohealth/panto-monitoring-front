@@ -1,18 +1,19 @@
 import { useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { AlignJustify, LogOut } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { Sidebar } from './Sidebar';
 import MobileSidebar from './MobileSidebar';
+import { useAuthStore } from '../../store/auth';
 
 export function DashboardLayout() {
   const [isSidebarOpen, setSidebarOpen] = useState(false)
-  const navigate = useNavigate();
+  const logout = useAuthStore((state) => state.logout);
 
   const handleLogout = () => {
+    logout()
     toast.success('Logged out successfully');
-    navigate('/login', {replace:true});
   };
 
 

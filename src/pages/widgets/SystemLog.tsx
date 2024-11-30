@@ -1,119 +1,106 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { DateTimeFilters } from '../../components/filters/DateTimeFilters';
 import { exportToPDF, exportToExcel } from '../../utils/export';
 import { RadioGroup } from '../../components/ui/RadioGroup';
+import { SystemLogApi } from '../../api/SystemLog';
+import { useQuery } from '@tanstack/react-query';
+import { SystemLogApiResponse, SystemLogEntry } from '../../types/systemLog';
 
-interface SystemLogEntry {
-  id: number;
-  timestamp: string;
-  message: string;
-  type: string;
-  context: string;
-  trace: string;
-}
-
-const MOCK_LOGS: SystemLogEntry[] = [
-  {
-    id: 1,
-    timestamp: '2024-03-15T10:30:00',
-    message: 'Failed to connect to database',
-    type: 'error',
-    context: 'DatabaseService',
-    trace: 'Error: Connection timeout at DatabaseService.connect'
-  },
-  {
-    id: 2,
-    timestamp: '2024-03-15T10:31:00',
-    message: 'User authentication successful',
-    type: 'log',
-    context: 'AuthService',
-    trace: 'User ID: 123 authenticated successfully'
-  },
-  {
-    id: 3,
-    timestamp: '2024-03-15T10:32:00',
-    message: 'Invalid credentials provided',
-    type: 'error',
-    context: 'AuthService',
-    trace: 'Error: Invalid username or password'
-  },
-  {
-    id: 4,
-    timestamp: '2024-03-15T10:33:00',
-    message: 'System health check completed',
-    type: 'log',
-    context: 'HealthService',
-    trace: 'All systems operational'
-  }
-];
 
 export function SystemLogPage() {
-  const [logType, setLogType] = useState<'log' | 'error'>('log');
+  const [logType, setLogType] = useState<'log' | 'error' | 'all'>('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [filteredLogs,setFilteredLogs] = useState<SystemLogEntry[]>([])
   const itemsPerPage = 20;
 
-  // Filter logs based on selected type
-  const filteredLogs = useMemo(() => {
-    if (logType === 'log') {
-      return MOCK_LOGS;
+ const {data ,isPending ,error} = useQuery<SystemLogApiResponse , Error>({
+  queryKey: ['system-logs'],
+  queryFn: SystemLogApi.log,
+  refetchInterval:60000 // 1hour
+ })
+
+  useEffect(() => {
+    if (data?.result) {  
+      if (logType === 'all') {
+        setFilteredLogs(data.result); 
+      } else {
+        setFilteredLogs(data.result.filter(log => log?.type === logType));  
+      }
     }
-    return MOCK_LOGS.filter(log => log.type === 'error');
-  }, [logType]);
+  }, [logType, data?.result]);
+
+
 
   const handleExportPDF = () => {
-    exportToPDF('System Logs', filteredLogs, ['timestamp', 'message', 'type', 'context', 'trace']);
+    if(filteredLogs){
+      exportToPDF('System Logs', filteredLogs, ['time', 'message', 'type', 'context', 'trace']);
+    }
   };
 
   const handleExportExcel = () => {
-    exportToExcel('System Logs', filteredLogs, ['timestamp', 'message', 'type', 'context', 'trace']);
-  };
-
-  const handleSearch = async () => {
-    try {
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: itemsPerPage.toString(),
-        type: logType
-      });
-
-      // In a real app, you would use these parameters to fetch data
-      const url = `https://apiv4dev.pantohealth.com/api/v4/log?${params}`;
-      console.log('Fetching logs from:', url);
-    } catch (error) {
-      console.error('Failed to fetch logs:', error);
+    if(filteredLogs){
+      exportToExcel('System Logs', filteredLogs, ['time', 'message', 'type', 'context', 'trace']);
     }
   };
 
+  // const handleSearch = async () => {
+  //   try {
+  //     const params = new URLSearchParams({
+  //       page: currentPage.toString(),
+  //       limit: itemsPerPage.toString(),
+  //       type: logType
+  //     });
+
+  //     // In a real app, you would use these parameters to fetch data
+  //     const url = `https://apiv4dev.pantohealth.com/api/v4/log?${params}`;
+  //     console.log('Fetching logs from:', url);
+  //   } catch (error) {
+  //     console.error('Failed to fetch logs:', error);
+  //   }
+  // };
+
   const handleTypeChange = (value: string) => {
-    setLogType(value as 'log' | 'error');
+    setLogType(value as 'log' | 'error' | 'all');
     setCurrentPage(1); // Reset to first page when changing type
   };
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold text-gray-900">System Log</h1>
+      
 
       <DateTimeFilters 
         onExport={handleExportPDF}
         onExportExcel={handleExportExcel}
-        onSearch={handleSearch}
+        // onSearch={handleSearch}
+        onSearch={() => {}}
       />
 
       <div className="bg-white shadow rounded-lg">
-        <div className="p-4 border-b border-gray-200">
+      
+        <div className="p-4 border-b border-gray-200 flex justify-between">
           <RadioGroup
             options={[
-              { label: 'All Logs', value: 'log' },
-              { label: 'Errors Only', value: 'error' }
+              { label: 'All Logs', value: 'all' },
+              { label: 'Errors Only', value: 'error' },
+              { label: 'Logs Only', value: 'log' },
             ]}
             value={logType}
             onChange={handleTypeChange}
           />
+          <div className='bg-gray-100 text-gray-800 px-4 py-1 rounded-full'>{filteredLogs.length} Requests</div>
         </div>
-
         <div className="overflow-x-auto">
+
+          <div className="max-h-[calc(100vh-18rem)] overflow-y-auto scrollbar-thin 
+          scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+          <div className='flex flex-col'>
+          {/* loading */}
+          {isPending && <p className='loader items-center  mx-auto my-10 w-full h-full'></p>}
+          {/* Error */}
+          {error && <p className='loader items-center  mx-auto my-10 w-full h-full'>Somthing Went Wrong,Please Try again.</p>}
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 sticky top-0 z-10">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Time
@@ -132,40 +119,44 @@ export function SystemLogPage() {
                 </th>
               </tr>
             </thead>
+            
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredLogs.map((log) => (
-                <tr key={log.id} className="hover:bg-gray-50">
+              {filteredLogs?.map((log) => (
+                <tr key={log._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(log.timestamp).toLocaleString()}
+                    {new Date(log?.time).toLocaleString()}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {log.message}
+                    {log?.message}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      log.type === 'error' 
+                      log?.type === 'error' 
                         ? 'bg-red-100 text-red-800'
                         : 'bg-green-100 text-green-800'
                     }`}>
-                      {log.type}
+                      {log?.type}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {log.context}
+                    {log?.context || "~"}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
-                    <div className="max-w-lg truncate">
-                      {log.trace}
+                    <div className="max-w-lg overflow-hidden ">
+                      {log?.trace?.slice(0,140) || "~"}
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </div>
+          </div>
         </div>
+          
 
-        <div className="px-6 py-4 border-t border-gray-200">
-          <div className="flex items-center justify-between">
+        {/* <div className="px-6 py-4 border-t border-gray-200"> */}
+          {/* <div className="flex items-center justify-between">
             <button
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
@@ -182,8 +173,8 @@ export function SystemLogPage() {
             >
               Next
             </button>
-          </div>
-        </div>
+          </div> */}
+        {/* </div> */}
       </div>
     </div>
   );

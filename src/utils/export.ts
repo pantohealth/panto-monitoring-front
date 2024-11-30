@@ -19,6 +19,10 @@ export function exportToPDF(title: string, data: any[], columns: string[]) {
     head: [columns],
     body: data.map(item => columns.map(col => item[col])),
     startY: 30,
+    styles: {
+      fontSize: 7,  
+      cellPadding: 1,  
+    },
   });
   
   // Save the PDF
