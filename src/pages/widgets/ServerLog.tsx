@@ -1,93 +1,46 @@
-import { useState } from 'react';
+import moment from 'moment';
+import { useQuery } from '@tanstack/react-query';
 import { DateTimeFilters } from '../../components/filters/DateTimeFilters';
 import { exportToPDF, exportToExcel } from '../../utils/export';
-import { Dropdown } from '../../components/ui/Dropdown';
+import { DataToServerLog } from '../../api/DataToServerLog';
+import { ServerLogEntry } from '../../types/serverLog';
+import { useEffect, useState } from 'react';
 
-interface ServerLogEntry {
-  id: number;
-  recordTime: string;
-  receiveTime: string;
-  device: string;
-  acc: string;
-  system: string;
-  battery: string;
-  temp: string;
-  gps: string;
-  laser: string;
-  laserV: string;
-  tower: string;
-  error: string;
-  abnormal: string;
-}
-
-const MOCK_DEVICES = ['Leipzig 3', 'Leipzig 2', 'Leipzig1'];
-
-const MOCK_LOGS: ServerLogEntry[] = [
-  {
-    id: 1,
-    recordTime: '11/Nov/2024 09:52',
-    receiveTime: '11/Nov/2024 09:53',
-    device: 'Leipzig 3',
-    acc: '11996',
-    system: '7',
-    battery: '2',
-    temp: '~',
-    gps: '60',
-    laser: '~',
-    laserV: '~',
-    tower: '~',
-    error: '~',
-    abnormal: '1'
-  },
-  {
-    id: 2,
-    recordTime: '11/Nov/2024 09:52',
-    receiveTime: '11/Nov/2024 09:53',
-    device: 'Leipzig 2',
-    acc: '11996',
-    system: '7',
-    battery: '2',
-    temp: '~',
-    gps: '60',
-    laser: '~',
-    laserV: '~',
-    tower: '~',
-    error: '~',
-    abnormal: '0'
-  },
-  {
-    id: 3,
-    recordTime: '11/Nov/2024 09:52',
-    receiveTime: '11/Nov/2024 09:53',
-    device: 'Leipzig1',
-    acc: '11997',
-    system: '7',
-    battery: '2',
-    temp: '~',
-    gps: '60',
-    laser: '~',
-    laserV: '~',
-    tower: '~',
-    error: '~',
-    abnormal: '0'
-  }
-];
 
 export function ServerLogPage() {
-  const [selectedDevice, setSelectedDevice] = useState<string>('');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const filteredLogs = selectedDevice
-    ? MOCK_LOGS.filter(log => log.device === selectedDevice)
-    : MOCK_LOGS;
+  const {data, isPending, error} = useQuery<ServerLogEntry[], Error>({
+    queryKey:['server-log'],
+    queryFn: DataToServerLog.serverLog,
+    refetchInterval:60000 //1 min
+  })
+  
+  const [timeSearch,setTimeSearch] = useState<ServerLogEntry[]>([])
+
+  useEffect(() => {
+    if (data?.data?.length > 0) {
+      setTimeSearch(data?.data || []); 
+    } 
+  }, [data]);
+
+  
+  const formatDateTime = (date: string) =>
+    date ? moment(date).format("DD/MMM/YYYY") : "~";
+  const formatTime = (date: string) => (date ? moment(date).format("HH:mm") : "~");
 
   const handleExportPDF = () => {
+    const filteredLogs = timeSearch?.map(d => ({
+      ...d,
+      device:d?.device?.[0].name,
+      time: moment(d.time).format("DD/MMM/YYYY HH:mm"),
+      createdAt: moment(d.createdAt).format("DD/MMM/YYYY HH:mm")
+    }))
     exportToPDF('Server Logs', filteredLogs, [
-      'recordTime',
-      'receiveTime',
+      'time',
+      'createdAt',
       'device',
       'acc',
-      'system',
+      'systemMetric',
       'battery',
       'temp',
       'gps',
@@ -100,12 +53,18 @@ export function ServerLogPage() {
   };
 
   const handleExportExcel = () => {
+    const filteredLogs = timeSearch?.map(d => ({
+      ...d,
+      device:d?.device?.[0].name,
+      time: moment(d.time).format("DD/MMM/YYYY HH:mm"),
+      createdAt: moment(d.createdAt).format("DD/MMM/YYYY HH:mm")
+    }))
     exportToExcel('Server Logs', filteredLogs, [
-      'recordTime',
-      'receiveTime',
+      'time',
+      'createdAt',
       'device',
       'acc',
-      'system',
+      'systemMetric',
       'battery',
       'temp',
       'gps',
@@ -117,6 +76,35 @@ export function ServerLogPage() {
     ]);
   };
 
+  const searchTimeHandler = async (filters: {
+    fromDateTime: string;
+    toDateTime: string;
+    exactDateTime: string;
+    isExactSearch: boolean;
+  }) => {
+    const { fromDateTime, toDateTime, exactDateTime, isExactSearch } = filters;
+
+    if (!fromDateTime && !toDateTime && !exactDateTime && !isExactSearch) {
+      setTimeSearch(data?.data)
+      return;
+    }
+
+  
+    const filteredData = (data?.data || []).filter((item:ServerLogEntry) => {
+      const localTime = moment(exactDateTime).format('YYYY-MM-DDTHH:mm');
+      const localDate = moment(item.time).local().format('YYYY-MM-DDTHH:mm');
+
+      if (isExactSearch && exactDateTime) {
+        return localDate === localTime; 
+      } else if (!isExactSearch && fromDateTime && toDateTime) {
+        return localDate >= fromDateTime && localDate <= toDateTime;
+      }
+      return true; 
+    });
+
+    setTimeSearch(filteredData);
+  };
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold text-gray-900">Data to Server Log</h1>
@@ -124,24 +112,20 @@ export function ServerLogPage() {
       <DateTimeFilters 
         onExport={handleExportPDF}
         onExportExcel={handleExportExcel}
-        onSearch={() => {}}
+        onSearch={searchTimeHandler}
       />
 
       <div className="bg-white shadow rounded-lg">
-        <div className="p-4 border-b border-gray-200">
-          <Dropdown
-            value={selectedDevice}
-            onChange={setSelectedDevice}
-            options={MOCK_DEVICES}
-            placeholder="Select Device"
-            isOpen={isDropdownOpen}
-            onToggle={() => setIsDropdownOpen(!isDropdownOpen)}
-          />
-        </div>
 
         <div className="overflow-x-auto">
+          <div className="max-h-[calc(100vh-18rem)] overflow-y-auto scrollbar-thin 
+          scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+            {/* loading */}
+            {isPending && <p className='loader mx-auto my-10 w-full h-full'></p>}
+            {/* Error */}
+          {error && <p className='loader items-center  mx-auto my-10 w-full h-full'>Somthing Went Wrong,Please Try again.</p>}
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 sticky z-10 top-0">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Record</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Receive</th>
@@ -159,25 +143,38 @@ export function ServerLogPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredLogs.map((log) => (
-                <tr key={log.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{log.recordTime}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{log.receiveTime}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{log.device}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-blue-600">{log.acc}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-blue-600">{log.system}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-blue-600">{log.battery}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-blue-600">{log.temp}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-blue-600">{log.gps}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-blue-600">{log.laser}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-blue-600">{log.laserV}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-blue-600">{log.tower}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-red-600">{log.error}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-yellow-600">{log.abnormal}</td>
+              {timeSearch?.map((log: ServerLogEntry) => (
+                <tr key={log._id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900  items-center">
+                    <div className='flex flex-col items-center'>
+                      {formatDateTime(log?.time)}
+                      <span>{formatTime(log?.time)}</span>
+                    </div>
+                  </td>
+
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 flex  items-center">
+                    <div className='flex flex-col items-center'>
+                      {formatDateTime(log?.createdAt)}
+                      <span>{formatTime(log?.createdAt)}</span>
+                    </div>
+                  </td>
+
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{log?.device?.[0]?.name || "~"}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-blue-600">{log?.acc || '~'}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-blue-600">{log?.systemMetric || '~'}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-blue-600">{log?.battery || '~'}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-blue-600">{log?.temp || '~'}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-blue-600">{log?.gps || '~'}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-blue-600">{log?.laser || '~'}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-blue-600">{log?.laserV || '~'}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-blue-600">{log?.tower || '~'}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-red-600">{log?.error || '~'}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-yellow-600">{log?.abnormal || '~'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
         </div>
       </div>
     </div>

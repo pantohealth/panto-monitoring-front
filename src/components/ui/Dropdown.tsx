@@ -24,7 +24,7 @@ export function Dropdown({
         onClick={onToggle}
         className="w-full px-2 py-2 text-left bg-white border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
       >
-        <span className="flex items-center justify-between md:text-sm text-[11px]">
+        <span className="flex items-center justify-between md:text-sm text-[11px] overflow-hidden text-ellipsis">
           <span className={cn(!value && 'text-gray-400')}>
             {value || placeholder}
           </span>
@@ -49,7 +49,7 @@ export function Dropdown({
             >
               Show All
             </button>
-            {options.map((option) => (
+            {options?.map((option) => (
               <button
                 key={option}
                 onClick={() => {

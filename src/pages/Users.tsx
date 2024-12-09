@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DateTimeFilters } from '../components/filters/DateTimeFilters';
 import { exportToPDF, exportToExcel } from '../utils/export';
 import { UserActivityRow } from '../components/users/UserActivityRow';
@@ -7,6 +7,7 @@ import { Dropdown } from '../components/ui/Dropdown';
 import { UserActivity } from '../api/UserActivity';
 import { useQuery } from '@tanstack/react-query';
 import { ExportUser, User } from '../types/user';
+import moment from 'moment';
 
 export function UsersPage() {
   const [selectedMetric, setSelectedMetric] = useState<'clicks' | 'online'>('clicks');
@@ -14,23 +15,29 @@ export function UsersPage() {
   const [selectedCompany, setSelectedCompany] = useState<string>('');
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isCompanyDropdownOpen, setIsCompanyDropdownOpen] = useState(false);
+  const [filteredUsers,setFilteredUsers] = useState<User[]>([])
+  const [timeSearch,setTimeSearch] = useState<User[]>([])
 
  
-
   const {data,isPending,error} = useQuery<User[], Error>({
       queryKey:['users'],
       queryFn: UserActivity.getUsersActivity,
       // refetchInterval:30000 //30sec
     })
 
+
   //extract company name from data  
   const companyName = [...new Set(data?.map(data => data.company.name))].filter(item => item)
+
+  useEffect(() => {
+    const currentUsers = data?.filter((user) => {
+      if (selectedUser && user.username !== selectedUser) return false;
+      if (selectedCompany && user.company.name !== selectedCompany) return false;
+      return true;
+    }) || [];
+    setFilteredUsers(currentUsers)
+  },[data,timeSearch])
    
-  const filteredUsers = data?.filter(user => {
-    if (selectedUser && user.username !== selectedUser) return false;
-    if (selectedCompany && user.company.name !== selectedCompany) return false;
-    return true;
-  });
 
   const handleExportPDF = () => {
     const exportData: ExportUser[] = (filteredUsers || [])?.map(user => ({
@@ -53,6 +60,34 @@ export function UsersPage() {
 
     exportToExcel('User Activity Report', exportData, ['username', 'company', 'lastOnline', 'clicks']);
   };
+  
+  const searchTimeHandler = async (filters: {
+    fromDateTime: string;
+    toDateTime: string;
+    exactDateTime: string;
+    isExactSearch: boolean;
+  }) => {
+    const { fromDateTime, toDateTime, exactDateTime, isExactSearch } = filters;
+    if (!fromDateTime && !toDateTime && !exactDateTime && !isExactSearch) {
+      setTimeSearch(filteredUsers)
+      return;
+    }
+
+  
+    const filteredData = filteredUsers.filter((item) => {
+      const localTime = moment(exactDateTime).format('YYYY-MM-DDTHH:mm');
+      const localDate = moment(item.lastOnline).local().format('YYYY-MM-DDTHH:mm') ;
+
+      if (isExactSearch && exactDateTime) {
+        return localDate === localTime; 
+      } else if (!isExactSearch && fromDateTime && toDateTime) {
+        return localDate >= fromDateTime && localDate <= toDateTime;
+      }
+      return true; 
+    });
+
+    setFilteredUsers(filteredData);
+  };
 
 
   return (
@@ -64,7 +99,7 @@ export function UsersPage() {
       <DateTimeFilters 
         onExport={handleExportPDF}
         onExportExcel={handleExportExcel}
-        onSearch={() => {}}
+        onSearch={searchTimeHandler}
       />
 
       <div className="bg-white shadow rounded-lg">

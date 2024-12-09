@@ -12,5 +12,4 @@ export const loginApi = {
     const response = await api.post(PREFIX , credentials);
     return response.data;
   }
-
 };

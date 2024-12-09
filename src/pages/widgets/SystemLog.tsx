@@ -5,6 +5,7 @@ import { RadioGroup } from '../../components/ui/RadioGroup';
 import { SystemLogApi } from '../../api/SystemLog';
 import { useQuery } from '@tanstack/react-query';
 import { SystemLogApiResponse, SystemLogEntry } from '../../types/systemLog';
+import moment from 'moment';
 
 
 export function SystemLogPage() {
@@ -12,6 +13,7 @@ export function SystemLogPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredLogs,setFilteredLogs] = useState<SystemLogEntry[]>([])
   const itemsPerPage = 20;
+  const [timeSearch,setTimeSearch] = useState<SystemLogEntry[]>([])
 
  const {data ,isPending ,error} = useQuery<SystemLogApiResponse , Error>({
   queryKey: ['system-logs'],
@@ -27,7 +29,36 @@ export function SystemLogPage() {
         setFilteredLogs(data.result.filter(log => log?.type === logType));  
       }
     }
-  }, [logType, data?.result]);
+  }, [logType, data?.result,timeSearch]);
+
+  const searchTimeHandler = async (filters: {
+    fromDateTime: string;
+    toDateTime: string;
+    exactDateTime: string;
+    isExactSearch: boolean;
+  }) => {
+    const { fromDateTime, toDateTime, exactDateTime, isExactSearch } = filters;
+
+    if (!fromDateTime && !toDateTime && !exactDateTime && !isExactSearch) {
+      setTimeSearch(filteredLogs)
+      return;
+    }
+
+  
+    const filteredData = filteredLogs.filter((item) => {
+      const localTime = moment(exactDateTime).format('YYYY-MM-DDTHH:mm');
+      const localDate = moment(item.time).local().format('YYYY-MM-DDTHH:mm') ;
+
+      if (isExactSearch && exactDateTime) {
+        return localDate === localTime; 
+      } else if (!isExactSearch && fromDateTime && toDateTime) {
+        return localDate >= fromDateTime && localDate <= toDateTime;
+      }
+      return true; 
+    });
+
+    setFilteredLogs(filteredData);
+  };
 
 
 
@@ -72,8 +103,7 @@ export function SystemLogPage() {
       <DateTimeFilters 
         onExport={handleExportPDF}
         onExportExcel={handleExportExcel}
-        // onSearch={handleSearch}
-        onSearch={() => {}}
+        onSearch={searchTimeHandler}
       />
 
       <div className="bg-white shadow rounded-lg">

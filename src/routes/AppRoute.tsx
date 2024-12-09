@@ -12,7 +12,7 @@ import { CustomerBugsPage } from '../pages/admin/CustomerBugs';
 import { SimulationRequestsPage } from '../pages/admin/SimulationRequests';
 import { DataManagementPage } from '../pages/admin/DataManagement';
 import { UserJourneyPage } from '../pages/admin/UserJourney';
-import { DeveloperReportsPage } from '../pages/admin/DeveloperReports';
+import { DeveloperReportsPage } from '../pages/admin/DeveloperReport/DeveloperReports';
 import { AdminWarningsPage } from '../pages/admin/AdminWarningsPage';
 import { ProtectedRoute } from './ProtectedRoute';  
 import { LoginPage } from '../pages/Login';
