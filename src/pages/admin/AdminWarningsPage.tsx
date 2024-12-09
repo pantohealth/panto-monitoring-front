@@ -13,6 +13,8 @@ import { Modal } from '../../components/ui/Modal';
 import { exportToPDF, exportToExcel } from '../../utils/export';
 
 import { Warning } from '../../types/warning';
+import { AllDevices } from '../../api/allDevices';
+import { DEVICES } from '../../types/devices';
 
 
 const WARNING_TYPES = ['Device','System', 'Ai'];
@@ -26,10 +28,10 @@ export function AdminWarningsPage() {
     queryFn: Warnings.getWarnings
   })
 
-  //extract devices from data
-  const DEVICES:string[] = 
-  [...new Set(data?.result?.map((warning: Warning) => warning?.device?.name))]
-  .filter((name): name is string => name !== undefined)
+  const { data:devices } = useQuery<DEVICES[]>({
+    queryKey: ['devices'],
+    queryFn: AllDevices.devices
+  })
 
   const [selectedType, setSelectedType] = useState<string>('');
   const [selectedSide, setSelectedSide] = useState<string>('');
@@ -177,20 +179,20 @@ export function AdminWarningsPage() {
             <div>
              <span className='flex my-2'>
               <strong>DeviceName:</strong>
-              <p className='px-2 mx-2 bg-slate-300 rounded-md'>{warningDetails.detail.deviceName}</p></span> 
+              <p className='px-2 mx-2 bg-slate-300 rounded-md'>{warningDetails?.detail.deviceName || '~'}</p></span> 
               <span className='flex my-2'><strong>Type:</strong>
-              <p className='px-2 mx-2 bg-slate-300 rounded-md'>{warningDetails.detail.type || '~'}</p></span>
+              <p className='px-2 mx-2 bg-slate-300 rounded-md'>{warningDetails?.detail.type || '~'}</p></span>
               <div className='my-2'>
               <strong>EventIds:</strong>
               {
-                warningDetails.detail.eventIds.map(e => (
+                warningDetails?.detail?.eventIds?.map(e => (
                     <p className='px-2 my-2 w-fit bg-slate-300 rounded-md'>{e}</p>
                   )
                 )
               }
               </div>
               <span className='flex my-2'><strong>SignalId:</strong>
-              <p className='px-2 mx-2 bg-slate-300 rounded-md'>{warningDetails.detail.signalId}</p></span>
+              <p className='px-2 mx-2 bg-slate-300 rounded-md'>{warningDetails.detail.signalId || '~'}</p></span>
               <span className='flex my-2'><strong>PassedTime:</strong>
               <p className='px-2 mx-2 bg-slate-300 rounded-md'>{warningDetails.detail.passedTime || '~'}</p></span>
               <span className='flex my-2'><strong>Time:</strong>
@@ -228,7 +230,7 @@ export function AdminWarningsPage() {
           <Dropdown
             value={selectedDevice}
             onChange={setSelectedDevice}
-            options={DEVICES}
+            options={devices?.map((d) => d.name)}
             placeholder="Filter Device"
             isOpen={isDeviceDropdownOpen}
             onToggle={() => setIsDeviceDropdownOpen(!isDeviceDropdownOpen)}
