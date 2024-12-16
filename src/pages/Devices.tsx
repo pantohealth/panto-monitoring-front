@@ -2,49 +2,67 @@ import { useEffect, useState } from 'react';
 import { DateTimeFilters } from '../components/filters/DateTimeFilters';
 import { exportToExcel, exportToPDF } from '../utils/export';
 import { Dropdown } from '../components/ui/Dropdown';
+import { useQuery } from '@tanstack/react-query';
+import { Devices } from '../api/Devices';
+import { AllDevices } from '../api/allDevices';
+import { DEVICE_STATUS, DEVICES } from '../types/devices';
 
-const AVAILABLE_DEVICES = [
-  'Device A',
-  'Device B',
-  'Device C',
-  'Device D',
-  'Device E',
-];
 
-const MOCK_DEVICES = [
-  { id: 1, device: 'Device A', paNumber: 'PA001', newPoint: 'Point 1' },
-  { id: 2, device: 'Device B', paNumber: 'PA002', newPoint: 'Point 2' },
-  { id: 3, device: 'Device C', paNumber: 'PA003', newPoint: 'Point 3' },
-];
-
-const COLUMNS = ['Device', 'PA Number', 'New Point'];
+const COLUMNS = ['Device', 'Normal', 'Abnormal','Overlap', 'New Point'];
 
 export function DevicesPage() {
+
+  const {data, isPending, error} = useQuery<DEVICE_STATUS[]>({
+    queryKey: ['devices'],
+    queryFn: Devices.devices
+  })
+
+  const {data: devices} = useQuery<DEVICES[]>({
+    queryKey: ['all-devices'],
+    queryFn: AllDevices.devices
+  })
+
   const [selectedDevice, setSelectedDevice] = useState<string>('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [filteredDevices, setFilteredDevices] = useState(MOCK_DEVICES);
+  const [filteredDevices, setFilteredDevices] = useState(data);
 
   const handleExportPDF = () => {
-    exportToPDF('Devices Report', filteredDevices, ['device', 'paNumber', 'newPoint']);
+    const formatedFilteredDevices = filteredDevices?.map(device => ({
+      ...device,
+      normal:device?.eventStatusCounts.normal,
+      abnormal:device?.eventStatusCounts.abnormal,
+      overlap:device?.eventStatusCounts.overlap,
+    }))
+    if(formatedFilteredDevices){
+    exportToPDF('Devices Report', formatedFilteredDevices, ['name', 'normal', 'abnormal','overlap', 'newPoint']);
+    }
   };
 
   const handleExportExcel = () => {
-    exportToExcel('Devices Report', filteredDevices, ['device', 'paNumber', 'newPoint']);
+    const formatedFilteredDevices = filteredDevices?.map(device => ({
+      ...device,
+      normal:device.eventStatusCounts.normal,
+      abnormal:device.eventStatusCounts.abnormal,
+      overlap:device.eventStatusCounts.overlap,
+    }))
+    if(formatedFilteredDevices){
+    exportToExcel('Devices Report', formatedFilteredDevices, ['name', 'normal', 'abnormal','overlap', 'newPoint']);
+    }
   };
 
   const handleDeviceSelect = (device: string) => {
     setSelectedDevice(device);
     setIsDropdownOpen(false);
     if (device) {
-      setFilteredDevices(MOCK_DEVICES.filter(d => d.device === device));
+      setFilteredDevices(data?.filter(d => d.name === device));
     } else {
-      setFilteredDevices(MOCK_DEVICES);
+      setFilteredDevices(data);
     }
   };
 
   useEffect(() => {
     handleDeviceSelect(selectedDevice);
-  }, [selectedDevice]);
+  }, [selectedDevice,data]);
 
   return (
     <div className="space-y-6">
@@ -52,14 +70,14 @@ export function DevicesPage() {
         <h1 className="text-2xl font-semibold text-gray-900">Devices</h1>
       </div>
 
-      <DateTimeFilters onExport={handleExportPDF} onExportExcel={handleExportExcel} onSearch={() => {}} />
+      <DateTimeFilters onExport={handleExportPDF} onExportExcel={handleExportExcel} />
 
       <div className="bg-white shadow rounded-lg">
       <div className="p-4 border-b border-gray-200 flex gap-4">
           <Dropdown
             value={selectedDevice}
             onChange={setSelectedDevice}
-            options={AVAILABLE_DEVICES}
+            options={devices?.map(d => d.name)}
             placeholder="Select Device"
             isOpen={isDropdownOpen}
             onToggle={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -67,8 +85,14 @@ export function DevicesPage() {
         </div>
         
         <div className="overflow-x-auto">
+          <div className="max-h-[calc(100vh-18rem)] overflow-y-auto scrollbar-thin 
+          scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+           {/* loading */}
+           {isPending && <p className='loader mx-auto my-10 w-full h-full'></p>}
+          {/* Error */}
+          {!isPending && error && <p className='loader items-center  mx-auto my-10 w-full h-full'>{error?.message}</p>}
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 sticky top-0 z-10">
               <tr>
                 {COLUMNS.map((column) => (
                   <th
@@ -81,15 +105,18 @@ export function DevicesPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredDevices.map((device) => (
-                <tr key={device.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">{device.device}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{device.paNumber}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{device.newPoint}</td>
+              {filteredDevices?.map((device) => (
+                <tr key={device._id}>
+                  <td className="px-6 py-4 whitespace-nowrap">{device.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{device?.eventStatusCounts?.normal || '~'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{device?.eventStatusCounts?.abnormal || '~'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{device?.eventStatusCounts?.overlap || '~'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{'~'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
         </div>
       </div>
     </div>
