@@ -155,11 +155,11 @@ export function TrainDevicePage() {
         <div className="max-h-[calc(100vh-18rem)] overflow-y-auto scrollbar-thin 
           scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             <div className='flex flex-col'>
-               {/* loading */}
-               {isPending && <p className='loader mx-auto my-10 w-full h-full'></p>}
+              {/* loading */}
+              {isPending && <p className='loader mx-auto my-10 w-full h-full'></p>}
               {/* Error */}
-              {error && 
-              <p className='loader items-center  mx-auto my-10 w-full h-full'>Somthing Went Wrong,Please Try again.</p>}
+              {!isPending && error && 
+              <p className='loader items-center  mx-auto my-10 w-full h-full'>{error?.message}</p>}
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50 sticky z-10 top-0">
               <tr>

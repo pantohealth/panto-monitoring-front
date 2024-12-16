@@ -22,8 +22,9 @@ export function UsersPage() {
   const {data,isPending,error} = useQuery<User[], Error>({
       queryKey:['users'],
       queryFn: UserActivity.getUsersActivity,
-      // refetchInterval:30000 //30sec
+      refetchInterval:60000 //1 min
     })
+    console.log({data,isPending,error})
 
 
   //extract company name from data  
@@ -36,7 +37,7 @@ export function UsersPage() {
       return true;
     }) || [];
     setFilteredUsers(currentUsers)
-  },[data,timeSearch])
+  },[data,timeSearch,selectedUser,selectedCompany])
    
 
   const handleExportPDF = () => {
@@ -140,7 +141,7 @@ export function UsersPage() {
           {/* loading */}
           {isPending && <p className='loader mx-auto my-10 w-full h-full'></p>}
           {/* Error */}
-          {error && <p className='loader items-center  mx-auto my-10 w-full h-full'>Somthing Went Wrong,Please Try again.</p>}
+          {!isPending && error && <p className='loader items-center  mx-auto my-10 w-full h-full'>{error?.message}</p>}
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50 sticky top-0 z-10">
               <tr>

@@ -252,7 +252,7 @@ export function AdminWarningsPage() {
           {/* loading */}
           {isPending && <p className='loader mx-auto my-10 w-full h-full'></p>}
           {/* Error */}
-          {error && <p className='loader items-center  mx-auto my-10 w-full h-full'>Somthing Went Wrong,Please Try again.</p>}
+          {!isPending && error && <p className='loader items-center  mx-auto my-10 w-full h-full'>Somthing Went Wrong,Please Try again.</p>}
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50 sticky top-0 z-10">
               <tr>
