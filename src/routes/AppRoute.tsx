@@ -18,20 +18,28 @@ import { ProtectedRoute } from './ProtectedRoute';
 import { LoginPage } from '../pages/Login';
 
 import { useAuthStore } from '../store/auth';
+import { Points } from '../pages/PointsVsPop';
+import { useEffect } from 'react';
 
 
 export function AppRoutes() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const checkAuthentication = useAuthStore((state) => state.checkAuthentication);
+
+  useEffect(() => {
+    checkAuthentication(); 
+  }, []);
   
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
+      <Route  path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" replace />} />
       
       <Route path="/dashboard" 
       element={isAuthenticated ? <DashboardLayout/> : <ProtectedRoute isAuthenticated={isAuthenticated} />}>
         <Route index element={<Navigate to="/dashboard/users" />} />
         <Route path="users" element={<UsersPage />} />
-        <Route path="devices" element={<DevicesPage />} />
+        <Route path="devices/devices" element={<DevicesPage />} />
+        <Route path="devices/point-vs-pop" element={<Points />} />
         <Route path="company" element={<CompanyPage />} />
         <Route path="health" element={<HealthPage />} />
         <Route path="widgets/server-log" element={<ServerLogPage />} />

@@ -25,7 +25,7 @@ export function CreateModal({ isOpen, onClose, onSubmit, devices, conditions }: 
   const [isDeviceDropdownOpen, setIsDeviceDropdownOpen] = useState(false);
   const [isConditionDropdownOpen, setIsConditionDropdownOpen] = useState(false);
 
-  const {isPosting,notPosting} = useDeveloperReports()
+  const {isPending,error} = useDeveloperReports()
 
 
   const resetForm = () => {
@@ -146,9 +146,9 @@ export function CreateModal({ isOpen, onClose, onSubmit, devices, conditions }: 
           <Button variant="ghost" onClick={() => { onClose(); resetForm(); }}>
             Cancel
           </Button>
-          <Button type="button" isLoading={isPosting} onClick={handleValidate}>
+          <Button type="button" isLoading={isPending} onClick={handleValidate}>
             Create Task
-            {notPosting && toast.error(notPosting.message)}
+            {error && toast.error(error.message)}
           </Button>
         </div>
       </div>

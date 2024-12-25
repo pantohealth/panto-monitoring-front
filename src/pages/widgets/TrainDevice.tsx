@@ -144,7 +144,7 @@ export function TrainDevicePage() {
           <Dropdown
             value={selectedDevice}
             onChange={setSelectedDevice}
-            options={devices?.map(d => d.name || '')}
+            options={devices ? devices?.map(d => d.name || '') : []}
             placeholder="Select Device"
             isOpen={isDropdownOpen}
             onToggle={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -159,7 +159,7 @@ export function TrainDevicePage() {
               {isPending && <p className='loader mx-auto my-10 w-full h-full'></p>}
               {/* Error */}
               {!isPending && error && 
-              <p className='loader items-center  mx-auto my-10 w-full h-full'>{error?.message}</p>}
+              <p className='items-center  mx-auto my-10 w-full h-full'>{error?.message}</p>}
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50 sticky z-10 top-0">
               <tr>

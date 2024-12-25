@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { ChevronDown,Users, Monitor, Building2, Activity, LogOut,  Layers3, LayoutDashboard} from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -7,7 +7,12 @@ import { useAuthStore } from '../../store/auth';
 
 const navigation = [
   { name: 'User Management', href: '/dashboard/users', icon: Users },
-  { name: 'Devices', href: '/dashboard/devices', icon: Monitor },
+  { name: 'Devices', href: '/dashboard/devices', icon: Monitor ,
+    subItems: [
+      { name: 'Devices', href: '/dashboard/devices/devices' },
+      { name: 'Point Vs Pop', href: '/dashboard/devices/point-vs-pop' },
+    ]
+  },
   { name: 'Company', href: '/dashboard/company', icon: Building2 },
   { name: 'Server Health', href: '/dashboard/health', icon: Activity },
   { 
@@ -38,13 +43,33 @@ const navigation = [
 
 interface SidebarProps {
   isOpen: boolean,
+  setIsOpen:(isOpen: boolean) => void
 }
 
-export function Sidebar({isOpen}:SidebarProps) {
+export function Sidebar({isOpen,setIsOpen}:SidebarProps) {
   
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isDropdownOpenDashboard, setIsDropdownOpenDashboard] = useState(false);
+  const [isDropdownDevice, setIsDropdownDevice] = useState(false);
+  const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
+  useEffect(() => {
+    // Check if current path matches any subItems and expand their parent
+    navigation.forEach(item => {
+      if (item.subItems) {
+        const hasActiveSubItem = item.subItems.some(subItem => 
+          location.pathname.startsWith(subItem.href)
+        );
+        if (hasActiveSubItem && !expandedItems.includes(item.name)) {
+          setExpandedItems(prev => [...prev, item.name]);
+          if (item.name === 'Widgets') setIsDropdownOpen(true);
+          if (item.name === 'Admin Dashboard') setIsDropdownOpenDashboard(true);
+          if (item.name === 'Devices') setIsDropdownDevice(true);
+        }
+      }
+    });
+  }, [location.pathname]);
 
   const logout = useAuthStore((state) => state.logout);
   
@@ -77,6 +102,7 @@ export function Sidebar({isOpen}:SidebarProps) {
                     toggleExpand(item.name)
                     if(item.name === 'Widgets') setIsDropdownOpen(!isDropdownOpen)
                     if(item.name === 'Admin Dashboard') setIsDropdownOpenDashboard(!isDropdownOpenDashboard)
+                    if(item.name === 'Devices') setIsDropdownDevice(!isDropdownDevice)
                   }}
                   className={cn(
                     'w-full group flex items-center px-2 py-2 text-sm font-medium rounded-md',
@@ -88,16 +114,20 @@ export function Sidebar({isOpen}:SidebarProps) {
                     aria-hidden="true"
                   />
                   {item.name}
-                  {(item.name === "Widgets" || item.name === 'Admin Dashboard') && 
+                  {(item.name === "Widgets" || item.name === 'Admin Dashboard'|| item.name === 'Devices') && 
                   <ChevronDown className={cn('w-4 h-4 ml-2 transition-transform duration-200',
                         item.name === 'Widgets' && isDropdownOpen && 'transform rotate-180',
                         item.name === 'Admin Dashboard' && isDropdownOpenDashboard && 'transform rotate-180',
+                        item.name === 'Devices' && isDropdownDevice && 'transform rotate-180',
                       )}/>}
                 </button>
                 {expandedItems.includes(item.name) && (
                   <div className="ml-8 space-y-1">
                     {item.subItems.map((subItem) => (
                       <NavLink
+                        onClick={() => {
+                          if(isMobile) setIsOpen(false)
+                        }}
                         key={subItem.href}
                         to={subItem.href}
                         className={({ isActive }) =>
@@ -117,6 +147,9 @@ export function Sidebar({isOpen}:SidebarProps) {
               </>
             ) : (
               <NavLink
+                onClick={() => {
+                  if(isMobile) setIsOpen(false)
+                }}
                 to={item.href}
                 className={({ isActive }) =>
                   cn(

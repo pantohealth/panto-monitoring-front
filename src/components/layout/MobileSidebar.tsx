@@ -21,7 +21,7 @@ const MobileSidebar = ({isOpen,setIsOpen}:MobileSidebarProps) => {
 
             </div>
                {
-                isOpen && <Sidebar isOpen={isOpen}/>
+                isOpen && <Sidebar isOpen={isOpen} setIsOpen={setIsOpen}/>
                } 
             </div>
     );
