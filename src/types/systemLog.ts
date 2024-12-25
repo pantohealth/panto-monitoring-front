@@ -9,4 +9,8 @@ export interface SystemLogEntry {
    
 export interface SystemLogApiResponse {
     result: SystemLogEntry[];
+    total: number;
+    page: number;
+    limit: number;
 }
+     

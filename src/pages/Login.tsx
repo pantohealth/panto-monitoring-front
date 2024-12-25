@@ -27,7 +27,6 @@ export function LoginPage() {
     mutationFn: loginApi.login,
     onSuccess: (data) => {
       const token = data.token;
-      localStorage.setItem('token', token);
       setAuth({ token, isAuthenticated: true });
       toast.success('Successfully logged in!');
       navigate('/dashboard',{replace:true});

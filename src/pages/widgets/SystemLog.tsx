@@ -6,30 +6,53 @@ import { SystemLogApi } from '../../api/SystemLog';
 import { useQuery } from '@tanstack/react-query';
 import { SystemLogApiResponse, SystemLogEntry } from '../../types/systemLog';
 import moment from 'moment';
+import TablePagination from "@mui/material/TablePagination";
 
 
 export function SystemLogPage() {
   const [logType, setLogType] = useState<'log' | 'error' | 'all'>('all');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [allLogs, setAllLogs] = useState<number | null>(null);
   const [filteredLogs,setFilteredLogs] = useState<SystemLogEntry[]>([])
-  const itemsPerPage = 20;
-  const [timeSearch,setTimeSearch] = useState<SystemLogEntry[]>([])
+  // const [timeSearch,setTimeSearch] = useState<SystemLogEntry[]>([])
 
- const {data ,isPending ,error} = useQuery<SystemLogApiResponse , Error>({
-  queryKey: ['system-logs'],
-  queryFn: SystemLogApi.log,
-  refetchInterval:60000 // 1hour
- })
+ const { data, isPending, error } = useQuery<SystemLogApiResponse, Error>({
+  queryKey: ['system-logs', page + 1, rowsPerPage, logType !== 'all' ? logType : " "], 
+  queryFn: () => {
+    const params = logType !== 'all' ? { page: page + 1, rowsPerPage, type: logType } : { page: page + 1, rowsPerPage };
+    return SystemLogApi.log(params);
+  },
+  refetchInterval: 60000, // 1 hour
+})
 
-  useEffect(() => {
-    if (data?.result) {  
-      if (logType === 'all') {
-        setFilteredLogs(data.result); 
-      } else {
-        setFilteredLogs(data.result.filter(log => log?.type === logType));  
-      }
-    }
-  }, [logType, data?.result,timeSearch]);
+// get total numbers on first load and when filters change
+useEffect(() => {
+  if (allLogs === null && data?.total) setAllLogs(data?.total);
+
+  if(data?.total! > 20 && logType === "error" || data?.total! > 20 && logType === "log") setAllLogs(data?.total!);
+},[filteredLogs,logType])
+
+
+useEffect(() => {
+  let logsToFilter = data?.result;
+
+  if (logType !== 'all') {
+    logsToFilter = logsToFilter?.filter((log) => log.type === logType);
+  }
+
+  setFilteredLogs(logsToFilter || []);
+}, [logType, data]);
+
+const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
+  setPage(newPage);
+};
+
+const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const newRowsPerPage = parseInt(event.target.value, 10);
+  setRowsPerPage(newRowsPerPage);
+  setPage(0);
+};
 
   const searchTimeHandler = async (filters: {
     fromDateTime: string;
@@ -40,14 +63,14 @@ export function SystemLogPage() {
     const { fromDateTime, toDateTime, exactDateTime, isExactSearch } = filters;
 
     if (!fromDateTime && !toDateTime && !exactDateTime && !isExactSearch) {
-      setTimeSearch(filteredLogs)
+      setFilteredLogs(filteredLogs)
       return;
     }
 
-  
+    
     const filteredData = filteredLogs.filter((item) => {
       const localTime = moment(exactDateTime).format('YYYY-MM-DDTHH:mm');
-      const localDate = moment(item.time).local().format('YYYY-MM-DDTHH:mm') ;
+      const localDate = moment(item.time).local().format('YYYY-MM-DDTHH:mm');
 
       if (isExactSearch && exactDateTime) {
         return localDate === localTime; 
@@ -56,11 +79,8 @@ export function SystemLogPage() {
       }
       return true; 
     });
-
     setFilteredLogs(filteredData);
   };
-
-
 
   const handleExportPDF = () => {
     if(filteredLogs){
@@ -74,25 +94,9 @@ export function SystemLogPage() {
     }
   };
 
-  // const handleSearch = async () => {
-  //   try {
-  //     const params = new URLSearchParams({
-  //       page: currentPage.toString(),
-  //       limit: itemsPerPage.toString(),
-  //       type: logType
-  //     });
-
-  //     // In a real app, you would use these parameters to fetch data
-  //     const url = `https://apiv4dev.pantohealth.com/api/v4/log?${params}`;
-  //     console.log('Fetching logs from:', url);
-  //   } catch (error) {
-  //     console.error('Failed to fetch logs:', error);
-  //   }
-  // };
-
   const handleTypeChange = (value: string) => {
     setLogType(value as 'log' | 'error' | 'all');
-    setCurrentPage(1); // Reset to first page when changing type
+    setPage(0); // Reset to first page when changing type
   };
 
   return (
@@ -118,7 +122,7 @@ export function SystemLogPage() {
             value={logType}
             onChange={handleTypeChange}
           />
-          <div className='bg-gray-100 text-gray-800 px-4 py-1 rounded-full'>{filteredLogs.length} Requests</div>
+          <div className='bg-gray-100 text-gray-800 flex items-center md:text-base text-xs md:px-4 pl-6 py-1 rounded-full'>{allLogs || "...."} Requests</div>
         </div>
         <div className="overflow-x-auto">
 
@@ -128,7 +132,7 @@ export function SystemLogPage() {
           {/* loading */}
           {isPending && <p className='loader items-center  mx-auto my-10 w-full h-full'></p>}
           {/* Error */}
-          {!isPending && error && <p className='loader items-center  mx-auto my-10 w-full h-full'>{error?.message}</p>}
+          {!isPending && error && <p className='items-center  mx-auto my-10 w-full h-full'>{error?.message}</p>}
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50 sticky top-0 z-10">
               <tr>
@@ -156,7 +160,7 @@ export function SystemLogPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(log?.time).toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
+                  <td className="px-6 py-4 text-sm text-gray-900 whitespace-pre-wrap">
                     {log?.message}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -183,28 +187,19 @@ export function SystemLogPage() {
           </div>
           </div>
         </div>
+        <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
+        <TablePagination
+          component="div"
+          count={allLogs || 0} // Total number of entries
+          page={page} // Current page
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage} // Entries per page
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[10, 20, 50, 100]} 
+          labelRowsPerPage="Entries per page"
+        />
           
-
-        {/* <div className="px-6 py-4 border-t border-gray-200"> */}
-          {/* <div className="flex items-center justify-between">
-            <button
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-              className="px-3 py-1 border rounded text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <span className="text-sm text-gray-600">
-              Page {currentPage}
-            </span>
-            <button
-              onClick={() => setCurrentPage(prev => prev + 1)}
-              className="px-3 py-1 border rounded text-sm text-gray-600 hover:bg-gray-50"
-            >
-              Next
-            </button>
-          </div> */}
-        {/* </div> */}
+        </div>
       </div>
     </div>
   );

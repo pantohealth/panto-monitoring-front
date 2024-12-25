@@ -3,19 +3,23 @@ import { DateTimeFilters } from '../components/filters/DateTimeFilters';
 import { exportToExcel, exportToPDF } from '../utils/export';
 import { Dropdown } from '../components/ui/Dropdown';
 import { useQuery } from '@tanstack/react-query';
-import { Devices } from '../api/Devices';
 import { AllDevices } from '../api/allDevices';
-import { DEVICE_STATUS, DEVICES } from '../types/devices';
+import {  DEVICES } from '../types/devices';
+import { DevicesPop } from '../api/pointsVsPop';
+
+import {  ResponsiveContainer } from 'recharts';
+import PointChart from '../components/ui/pointChart/PointChart';
+import { PopData } from '../types/pointvspop';
 
 
-const COLUMNS = ['Device', 'Normal', 'Abnormal','Overlap', 'New Point'];
+const COLUMNS = ['Device', 'Pop Analysis'];
 
-export function DevicesPage() {
+export function Points() {
 
-  const {data, isPending, error} = useQuery<DEVICE_STATUS[]>({
-    queryKey: ['devices'],
-    queryFn: Devices.devices,
-    refetchInterval: 60000 //60 sec
+  const {data, isPending, error} = useQuery<PopData[]>({
+    queryKey: ['pop'],
+    queryFn: DevicesPop.pointsVsPop,
+    // refetchInterval: 60000 //60 sec
   })
 
   const {data: devices} = useQuery<DEVICES[]>({
@@ -27,27 +31,24 @@ export function DevicesPage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [filteredDevices, setFilteredDevices] = useState(data);
 
+
   const handleExportPDF = () => {
-    const formatedFilteredDevices = filteredDevices?.map(device => ({
-      ...device,
-      normal:device?.eventStatusCounts.normal,
-      abnormal:device?.eventStatusCounts.abnormal,
-      overlap:device?.eventStatusCounts.overlap,
-    }))
-    if(formatedFilteredDevices){
-    exportToPDF('Devices Report', formatedFilteredDevices, ['name', 'normal', 'abnormal','overlap', 'newPoint']);
+    const formatedFilteredPoints = filteredDevices?.map(device => ({
+        ...device,
+        points:device.points.join(", "),
+      }))
+    if(formatedFilteredPoints){
+    exportToPDF('Points Report', formatedFilteredPoints, ['name', 'points']);
     }
   };
 
   const handleExportExcel = () => {
-    const formatedFilteredDevices = filteredDevices?.map(device => ({
+    const formatedFilteredPoints = filteredDevices?.map(device => ({
       ...device,
-      normal:device.eventStatusCounts.normal,
-      abnormal:device.eventStatusCounts.abnormal,
-      overlap:device.eventStatusCounts.overlap,
+      points:device.points.join(", "),
     }))
-    if(formatedFilteredDevices){
-    exportToExcel('Devices Report', formatedFilteredDevices, ['name', 'normal', 'abnormal','overlap', 'newPoint']);
+    if(formatedFilteredPoints){
+    exportToExcel('Points Report', formatedFilteredPoints, ['name', 'points']);
     }
   };
 
@@ -65,10 +66,11 @@ export function DevicesPage() {
     handleDeviceSelect(selectedDevice);
   }, [selectedDevice,data]);
 
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900">Devices</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">Points vs Pop</h1>
       </div>
 
       <DateTimeFilters onExport={handleExportPDF} onExportExcel={handleExportExcel} />
@@ -91,7 +93,7 @@ export function DevicesPage() {
            {/* loading */}
            {isPending && <p className='loader mx-auto my-10 w-full h-full'></p>}
           {/* Error */}
-          {!isPending && error && <p className='items-center  mx-auto my-10 w-full h-full'>{error?.message}</p>}
+          {error && !isPending && <p className='items-center mx-auto my-10 w-full h-full'>{error?.message}</p>}
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50 sticky top-0 z-10">
               <tr>
@@ -109,10 +111,13 @@ export function DevicesPage() {
               {filteredDevices?.map((device) => (
                 <tr key={device._id}>
                   <td className="px-6 py-4 whitespace-nowrap">{device.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{device?.eventStatusCounts?.normal || '~'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{device?.eventStatusCounts?.abnormal || '~'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{device?.eventStatusCounts?.overlap || '~'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{'~'}</td>
+
+                  <ResponsiveContainer width="100%" height="100%">
+                  <td className="px-2 py-4 whitespace-nowrap">
+                    <PointChart data={device}/>
+                  </td>
+                </ResponsiveContainer>
+                    
                 </tr>
               ))}
             </tbody>

@@ -23,11 +23,12 @@ export function CompanyPage() {
 
   const {data, isPending, error} = useQuery<COMPANIES[]>({
     queryKey: ['companies'],
-    queryFn: Company.companies
+    queryFn: Company.companies,
+    refetchInterval: 60000 //60 sec
   })
 
   //extract company name from data  
-  const COMPANIES = (data?.map(data => data.name))
+  const COMPANIES = data ? data?.map(data => data.name) : []
 
   const [selectedCompany, setSelectedCompany] = useState<string>('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -102,7 +103,7 @@ export function CompanyPage() {
           {/* loading */}
           {isPending && <p className='loader mx-auto my-10 w-full h-full'></p>}
           {/* Error */}
-          {!isPending && error && <p className='loader items-center  mx-auto my-10 w-full h-full'>{error?.message}</p>}
+          {!isPending && error && <p className='items-center  mx-auto my-10 w-full h-full'>{error?.message}</p>}
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50 sticky top-0 z-10">
               <tr>

@@ -1,49 +1,34 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DeveloperReports } from '../api/DeveloperReport';
-import { Task } from '../types/developerReports';
 import { downloadExcelFile } from '../utils/download';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { AllDevices } from '../api/allDevices';
+import { Task } from '../types/developerReports';
 
 export function useDeveloperReports() {
   const queryClient = useQueryClient();
-  const [isDownloading, setIsDownloading] = useState<Record<number, boolean>>({});
-
-  const {
-    data: reportData,
-    isPending,
-    error,
-  } = useQuery<Task[], Error>({
-    queryKey: ['developer-Report'],
-    queryFn: DeveloperReports.getReports,
-  });
+  const [isDownloading, setIsDownloading] = useState<boolean>(false)
+  const [reportData, setReportData] = useState<Task>();
 
   const { data: conditions } = useQuery({
     queryKey: ['developer-conditions'],
     queryFn: DeveloperReports.getConditions,
   });
 
-  const { mutate: deleteReport } = useMutation({
-    mutationFn: DeveloperReports.deleteReports,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['developer-Report'] });
-    },
-  });
-
-  const { mutate: createReport, isPending: isPosting, error:notPosting } = useMutation({
+  const { mutate: createReport, isPending, error } = useMutation({
     mutationFn: DeveloperReports.postReports,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['developer-Report'] });
+    onSuccess: (response) => {
+      setReportData(response)
     },
   });
 
-  const downloadReport = async (id: number) => {
-    setIsDownloading(prev => ({ ...prev, [id]: true }));
+  const downloadReport = () => {
+    setIsDownloading(true);
     try {
-      const response = await DeveloperReports.downloadReport(id);
-      if (response && response.base64File) {
-        downloadExcelFile(response.base64File, `report-${id}.xlsx`);
+      if (reportData && reportData.base64File) {
+        downloadExcelFile(reportData.base64File, `report-${reportData.deviceId}.xlsx`);
+        toast.loading('Downloading report...',{  duration: 2000 });
         toast.success('Report downloaded successfully');
       } else {
         toast.error('Failed to download report');
@@ -51,7 +36,7 @@ export function useDeveloperReports() {
     } catch (error) {
       toast.error('Error downloading report');
     } finally {
-      setIsDownloading(prev => ({ ...prev, [id]: false }));
+      setIsDownloading(false);
     }
   };
 
@@ -61,17 +46,13 @@ const {data:devices} = useQuery({
 })
 
   return {
-    reportData,
-    isPending,
-    error,
     conditions,
-    deleteReport,
     createReport,
-    isPosting,
+    isPending,
     devices,
     downloadReport,
     isDownloading,
     queryClient,
-    notPosting
+    error
   };
 }

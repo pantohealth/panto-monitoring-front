@@ -123,7 +123,7 @@ export function ServerLogPage() {
             {/* loading */}
             {isPending && <p className='loader mx-auto my-10 w-full h-full'></p>}
             {/* Error */}
-          {!isPending && error && <p className='loader items-center  mx-auto my-10 w-full h-full'>{error?.message}</p>}
+          {!isPending && error && <p className='items-center  mx-auto my-10 w-full h-full'>{error?.message}</p>}
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50 sticky z-10 top-0">
               <tr>
@@ -142,8 +142,8 @@ export function ServerLogPage() {
                 <th className="px-4 py-3 text-left text-xs font-medium text-yellow-500 uppercase tracking-wider">Abnormal</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {timeSearch?.map((log: ServerLogEntry) => (
+            <tbody className="bg-white divide-y  divide-gray-200">
+              {timeSearch.length > 0 ? timeSearch?.map((log: ServerLogEntry) => (
                 <tr key={log._id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900  items-center">
                     <div className='flex flex-col items-center'>
@@ -171,7 +171,7 @@ export function ServerLogPage() {
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-red-600">{log?.error || '~'}</td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-yellow-600">{log?.abnormal || '~'}</td>
                 </tr>
-              ))}
+              )) : <p className='flex items-center mx-auto'>No data Found :(</p>}
             </tbody>
           </table>
         </div>
