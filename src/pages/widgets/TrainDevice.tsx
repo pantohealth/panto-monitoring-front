@@ -32,7 +32,7 @@ export function TrainDevicePage() {
   })
 
   const {data:devices} = useQuery<DEVICES[]>({
-    queryKey: ['devices'],
+    queryKey: ['all-devices'],
     queryFn: AllDevices.devices
 })
 
