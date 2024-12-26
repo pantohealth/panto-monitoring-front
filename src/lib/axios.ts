@@ -23,6 +23,7 @@ api.interceptors.request.use((request) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.log(error)
     if (error.response?.status === 401) {
       Cookies.remove('token');
       window.location.href = '/login';
