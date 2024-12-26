@@ -28,7 +28,7 @@ export const useAuthStore = create<AuthState>()(
           Cookies.set('token', auth.token, {
             expires: 1, //1 day 
             // secure: true,
-            sameSite: 'none',
+            // sameSite: 'none',
           });
 
           // Update state
