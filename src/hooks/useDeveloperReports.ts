@@ -41,7 +41,7 @@ export function useDeveloperReports() {
   };
 
 const {data:devices} = useQuery({
-    queryKey: ['devices'],
+    queryKey: ['all-devices'],
     queryFn: AllDevices.devices
 })
 
