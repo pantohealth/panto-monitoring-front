@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useMutation } from '@tanstack/react-query';
 import { Input } from '../components/ui/Input';
@@ -7,6 +7,7 @@ import { Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../store/auth';
 import { loginApi } from '../api/Login';
+import { useUrlSwitch } from '../store/url';
 
 interface LoginForm {
   email: string;
@@ -18,10 +19,19 @@ export function LoginPage() {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm<LoginForm>();
 
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const { baseUrl, setBaseUrl } = useUrlSwitch();
+
+  const handleUrlChange = (urlType:string) => {
+    setBaseUrl(urlType);
+    setValue("email","")
+    setValue("password","")
+    toast.success('URL Successfully Changed')
+  };
 
   const loginMutation = useMutation({
     mutationFn: loginApi.login,
@@ -89,6 +99,17 @@ export function LoginPage() {
             Sign in
           </Button>
         </form>
+        <div className='hover:bg-blue-600 hover:text-white w-fit py-1 px-2 text-lg font-semibold rounded-md transition-all duration-300'>
+        {
+          baseUrl.includes(":5000") ? 
+            <NavLink to="#" onClick={() => handleUrlChange('dash')}>
+              Switch to Dash
+            </NavLink> :
+            <NavLink to="#" onClick={() => handleUrlChange('dev')}>
+              Switch to Dev
+            </NavLink>
+        }
+      </div>
       </div>
     </div>
   );
