@@ -1,14 +1,20 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-const baseURL = import.meta.env.VITE_API_BASE_URL;
+let apiBaseUrl = import.meta.env.VITE_API_DEV_BASE_URL;
 
 export const api = axios.create({
-  baseURL,
+  baseURL: apiBaseUrl,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+// Update baseURL dynamically
+export const setApiBaseUrl = (newBaseUrl:string) => {
+  apiBaseUrl = newBaseUrl;
+  api.defaults.baseURL = apiBaseUrl;
+};
 
 // request interceptor for authentication
 api.interceptors.request.use((request) => {
@@ -23,7 +29,6 @@ api.interceptors.request.use((request) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.log(error)
     if (error.response?.status === 401) {
       Cookies.remove('token');
       window.location.href = '/login';

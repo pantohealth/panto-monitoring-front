@@ -6,7 +6,7 @@ import { DevicesPage } from '../pages/Devices';
 import { CompanyPage } from '../pages/Company';
 import { HealthPage } from '../pages/Health';
 import { ServerLogPage } from '../pages/widgets/ServerLog';
-import { SystemLogPage } from '../pages/widgets/SystemLog';
+import { SystemLogPage } from '../pages/widgets/systemlog/index';
 import { TrainDevicePage } from '../pages/widgets/TrainDevice';
 import { CustomerBugsPage } from '../pages/admin/CustomerBugs';
 import { SimulationRequestsPage } from '../pages/admin/SimulationRequests';
