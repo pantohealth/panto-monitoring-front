@@ -43,7 +43,7 @@ export function LoginPage() {
       
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to login. Please try again.');
+      toast.error(error.response?.data?.error || 'Failed to login. Please try again.');
     },
   });
 
@@ -100,15 +100,12 @@ export function LoginPage() {
           </Button>
         </form>
         <div className='hover:bg-blue-600 hover:text-white w-fit py-1 px-2 text-lg font-semibold rounded-md transition-all duration-300'>
-        {
-          baseUrl.includes(":5000") ? 
-            <NavLink to="#" onClick={() => handleUrlChange('dash')}>
-              Switch to Dash
-            </NavLink> :
-            <NavLink to="#" onClick={() => handleUrlChange('dev')}>
-              Switch to Dev
+        
+        {baseUrl && (
+            <NavLink to="#" onClick={() => handleUrlChange(baseUrl.includes(':5000') ? 'dash' : 'dev')}>
+              Switch to {baseUrl.includes(':5000') ? 'Dash' : 'Dev'}
             </NavLink>
-        }
+          )}
       </div>
       </div>
     </div>

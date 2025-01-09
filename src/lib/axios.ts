@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-let apiBaseUrl = import.meta.env.VITE_API_DEV_BASE_URL;
+let apiBaseUrl = localStorage.getItem('baseUrl') || import.meta.env.VITE_API_DEV_BASE_URL;
 
 export const api = axios.create({
   baseURL: apiBaseUrl,
