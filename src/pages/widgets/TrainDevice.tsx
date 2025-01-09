@@ -199,8 +199,8 @@ export function TrainDevicePage() {
                         <div 
                           className={`h-2.5 rounded-full ${
                             device.batteryA >= 80 ? 'bg-red-500' :
-                            device.batteryA >= 60 ? 'bg-yellow-500' : 
-                            'bg-gray-200' 
+                            device.batteryA >= 60 ? 'bg-yellow-500' :
+                            device.batteryA >= 10 ? 'bg-green-500' :  'bg-gray-200'
                           }`}
                           style={{ width: `${device.batteryA}%` }}
                         ></div>

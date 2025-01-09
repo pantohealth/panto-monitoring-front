@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { setApiBaseUrl } from '../lib/axios';
 
 export const useUrlSwitch = () => {
-  const [baseUrl, setBaseUrlState] = useState(import.meta.env.VITE_API_DEV_BASE_URL);
+  const [baseUrl, setBaseUrlState] = useState(() => {
+    return localStorage.getItem('baseUrl') || import.meta.env.VITE_API_DEV_BASE_URL;
+  });
 
   const setBaseUrl = (urlType:string) => {
     let newBaseUrl;
@@ -13,7 +15,13 @@ export const useUrlSwitch = () => {
     }
     setBaseUrlState(newBaseUrl);
     setApiBaseUrl(newBaseUrl); // update axios instance dynamically
+    localStorage.setItem('baseUrl', newBaseUrl);
   };
+
+  useEffect(() => {
+    // ensure axios uses the correct baseUrl on component mount
+    setApiBaseUrl(baseUrl);
+  }, [baseUrl]);
 
   return { baseUrl, setBaseUrl };
 };
