@@ -10,7 +10,9 @@ const navigation = [
   { name: 'Devices', href: '/dashboard/devices', icon: Monitor ,
     subItems: [
       { name: 'Devices', href: '/dashboard/devices/devices' },
-      { name: 'Point Vs Pop', href: '/dashboard/devices/point-vs-pop' },
+      { name: 'Data to Server Log', href: '/dashboard/devices/server-log' },
+      { name: 'Device on Train', href: '/dashboard/devices/train-device' },
+      { name: 'Smart Device Report', href: '/dashboard/devices/smart-device-report' },
     ]
   },
   { name: 'Company', href: '/dashboard/company', icon: Building2 },
@@ -20,9 +22,9 @@ const navigation = [
     href: '/dashboard/widgets', 
     icon:  Layers3 ,
     subItems: [
-      { name: 'Data to Server Log', href: '/dashboard/widgets/server-log' },
+      // { name: 'Data to Server Log', href: '/dashboard/widgets/server-log' },
       { name: 'System Log', href: '/dashboard/widgets/system-log' },
-      { name: 'Device on Train', href: '/dashboard/widgets/train-device' }
+      // { name: 'Device on Train', href: '/dashboard/widgets/train-device' }
     ]
   },
   {

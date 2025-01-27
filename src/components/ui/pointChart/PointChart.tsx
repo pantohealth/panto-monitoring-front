@@ -1,49 +1,81 @@
 import { XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line, LineChart } from 'recharts';
-import { PopData } from '../../../types/pointvspop';
+
+import { useState } from 'react';
+import { Dropdown } from '../Dropdown';
 
 interface ChartProps {
-    data: PopData;
+    dataTypes: Record<string, string>;
+    xAxisType:string;
+    handleDateChange: (deviceId: number, date: string) => void;
+    handleDataTypeChange: (deviceId: number, dataType: string) => void;
+    selectedDate: Record<string, string>;
+    chartData: any;
+    device: any;
 }
 
-const PointChart = ({data}:ChartProps) => {
-    return (
-            <LineChart
-                      width={800}
-                      height={250}
-                      data={data?.points.map((value,index) => ({pop:index,point:value}))}
-                      margin={{
-                        top: 15,
-                        right: 10,
-                        left: 10,
-                        bottom: 20,
-                      }}
-                      barSize={20}
-                    >
-                    <XAxis label={{
-                    style: { fontSize: 20, fill: "#2036da",paddingTop:50 },
-                    value: "Pop",
-                    position: "insideBottom",
-                    offset: -10, // Adjust position
-                    dy: 5, // Additional vertical offset
-                    dx:0
-                        }} dataKey="pop"
-                            interval="preserveStartEnd"
-                            tickFormatter={(value) => (value === data?.points.length - 1 ? "100" : value)} 
-                            allowDataOverflow={true}/>
+const PointChart = ({dataTypes,
+    xAxisType,
+    handleDataTypeChange,
+    selectedDate,
+    handleDateChange,
+    chartData,
+    device
+}:ChartProps) => {
 
-                    <YAxis  label={{
-                    style: { fontSize: 20, fill: "#2036da" },
-                    value: "Points",
-                    angle: -90, // Rotate for vertical text
-                    position: "insideLeft",
-                    dx: 0, // Horizontal offset
-                    dy:30
-                    }}/>
-                    <Tooltip formatter={(value) => [`points: ${value}`]}/>
-                    {/* <Legend /> */}
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <Line type="monotone" dataKey="point" stroke="#2036da" strokeWidth={3} dot={false}/>
-                </LineChart>
+    const [isDataTypeDropdownOpen, setIsDataTypeDropdownOpen] = useState(false);
+    const [isDateDropdownOpen, setIsDateDropdownOpen] = useState(false);
+  
+    const dataTypeOptions = ['eventCount', 'pointCount', ...(xAxisType === 'pop' ? ['points'] : [])];
+    const dateOptions = chartData?.map((item:{date:number}) => item.date) || [];
+
+    return (
+        <>
+            <div className='flex py-1 pl-7 gap-4'>
+                
+            {/* Data Type Dropdown */}
+            <Dropdown
+              value={dataTypes[device._id] || 'eventCount'}
+              onChange={(value) => handleDataTypeChange(device._id, value)}
+              options={dataTypeOptions}
+              placeholder="Data Type"
+              isOpen={isDataTypeDropdownOpen}
+              onToggle={() => setIsDataTypeDropdownOpen(!isDataTypeDropdownOpen)}
+              disabled={xAxisType === 'pop'} // Disable when xAxisType is 'pop'
+              showAllOption={false}
+            />
+
+            {/* Date Dropdown */}
+            {xAxisType === 'date' && (
+              <Dropdown
+                value={selectedDate[device._id] || ''}
+                onChange={(value) => handleDateChange(device._id, value)}
+                options={dateOptions}
+                placeholder="Select Date"
+                isOpen={isDateDropdownOpen}
+                onToggle={() => setIsDateDropdownOpen(!isDateDropdownOpen)}
+              />
+            )}
+        </div>
+            {/* Chart */}
+            {chartData?.length > 0 ? (
+             <LineChart width={600} height={240} data={chartData}>
+               <CartesianGrid strokeDasharray="3 3" />
+               <XAxis dataKey={xAxisType === 'date' ? 'date' : 'pop'} />
+               <YAxis />
+               <Tooltip />
+               <Legend />
+               <Line
+                 type="monotone"
+                 dataKey={xAxisType === 'date' ? 'count' : 'points'} 
+                 stroke="#8884d8"
+                 activeDot={{ r: 8 }}
+                 
+            />
+            </LineChart>
+            ) : (
+            <p>No data available for this device on this date.</p>
+            )}    
+        </>
     );
 };
 
