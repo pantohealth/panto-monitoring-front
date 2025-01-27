@@ -5,7 +5,9 @@ export interface COMPANIES {
     videoRequestNumber: number,
     totalClicks: number,
     newPoints: number,
-    mergePoints: number
-    simulationRequests: number
+    // mergePoints: number,
+    simulationRequests: number,
+    totalEvents: number,
+    numberOfCatenary:number,
     eventStatusCounts:{normal?:number,abnormal?:number,overlap?:number}
 }

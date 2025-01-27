@@ -12,11 +12,14 @@ const COLUMNS = [
   'Video Requests',
   'Clicks',
   'New Points',
-  'Merge Points',
-  // 'Simulation Requests',
+  'Catenary Points',
+  'Total Events',
+  // 'Merge Points',
   'Normal',
   'Abnormal',
-  'Overlap'
+  'Overlap',
+  
+
 ];
 
 export function CompanyPage() {
@@ -125,8 +128,8 @@ export function CompanyPage() {
                   <td className="px-2 py-4 whitespace-nowrap">{company.videoRequestNumber}</td>
                   <td className="px-2 py-4 whitespace-nowrap">{company.totalClicks}</td>
                   <td className="px-2 py-4 whitespace-nowrap">{company.newPoints || '~'}</td>
-                  <td className="px-2 py-4 whitespace-nowrap">{company.mergePoints || '~'}</td>
-                  {/* <td className="px-2 py-4 whitespace-nowrap">{company.simulationRequests || '~'}</td> */}
+                  <td className="px-2 py-4 whitespace-nowrap">{company.numberOfCatenary || '~'}</td>
+                  <td className="px-2 py-4 whitespace-nowrap">{company.totalEvents || '~'}</td>
                   <td className="px-2 py-4 whitespace-nowrap">{company?.eventStatusCounts.normal || '~'}</td>
                   <td className="px-2 py-4 whitespace-nowrap">{company?.eventStatusCounts.abnormal || '~'}</td>
                   <td className="px-2 py-4 whitespace-nowrap">{company?.eventStatusCounts.overlap || '~'}</td>

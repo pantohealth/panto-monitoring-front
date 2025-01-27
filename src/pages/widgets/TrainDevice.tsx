@@ -25,33 +25,57 @@ const COLUMNS = [
 ];
 
 export function TrainDevicePage() {
- 
-  const {data, isPending, error} = useQuery<TrainDevice[] , Error>({
-    queryKey: ['trainDevices'],
-    queryFn: DeviceOnTrain.deviceOnTrain
-  })
-
-  const {data:devices} = useQuery<DEVICES[]>({
-    queryKey: ['all-devices'],
-    queryFn: AllDevices.devices
-})
 
   const [selectedDevice, setSelectedDevice] = useState<string>('');
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [allData , setAllData] = useState<TrainDevice[]>([])
+  const [timeSearch,setTimeSearch] = useState({
+    fromDateTime:'',
+    toDateTime:'',
+    exactDateTime:'',
+    isExactSearch:false
+  })
+
+    const allParams = () => {
+      const baseParams:BaseParams = {  };
+  
+      if (timeSearch.fromDateTime) baseParams.fromDateTime = timeSearch.fromDateTime;
+      if (timeSearch.toDateTime) baseParams.toDateTime = timeSearch.toDateTime;
+      if (timeSearch.exactDateTime) {
+        delete baseParams.fromDateTime;
+        delete baseParams.toDateTime;
+        baseParams.exactDateTime = timeSearch.exactDateTime;
+      }
+      return baseParams;
+    };
+
+    const {data, isPending, error} = useQuery<TrainDevice[] , Error>({
+      queryKey: [
+        'trainDevices',
+        timeSearch.fromDateTime || null,
+        timeSearch.toDateTime || null,
+        timeSearch.exactDateTime || null,
+      ],
+      queryFn: () => DeviceOnTrain.deviceOnTrain(allParams())
+    })
+  
+    const {data:devices} = useQuery<DEVICES[]>({
+      queryKey: ['all-devices'],
+      queryFn: AllDevices.devices
+  })
 
 
   useEffect(() => {
       const selectedDeviceObj = devices?.find(device => device.name === selectedDevice);
      
       if (selectedDeviceObj) {
-        const filteredData = data?.data?.filter((device:TrainDevice[]) => (
+        const filteredData = data?.filter((device:TrainDevice) => (
           device?.name === selectedDeviceObj.name
         )
         ) || [];  
         setAllData(filteredData);
       } else {
-        setAllData(data?.data);
+        setAllData(data || []);
       }
       
   },[selectedDevice,data,devices])
@@ -98,33 +122,65 @@ export function TrainDevicePage() {
     ]);
   };
 
+  // const searchTimeHandler = async (filters: {
+  //   fromDateTime: string;
+  //   toDateTime: string;
+  //   exactDateTime: string;
+  //   isExactSearch: boolean;
+  // }) => {
+  //   const { fromDateTime, toDateTime, exactDateTime, isExactSearch } = filters;
+
+  //   if (!fromDateTime && !toDateTime && !exactDateTime && !isExactSearch) {
+  //     setAllData(data || [])
+  //     return;
+  //   }
+
+  
+  //   const filteredData = (data || []).filter((item:TrainDevice) => {
+  //     const localTime = moment(exactDateTime).format('YYYY-MM-DDTHH:mm');
+  //     const localDate = moment(item.lastDates?.lastConnect).local().format('YYYY-MM-DDTHH:mm');
+
+  //     if (isExactSearch && exactDateTime) {
+  //       return localDate === localTime; 
+  //     } else if (!isExactSearch && fromDateTime && toDateTime) {
+  //       return localDate >= fromDateTime && localDate <= toDateTime;
+  //     }
+  //     return true; 
+  //   });
+
+  //   setAllData(filteredData);
+  // };
+
   const searchTimeHandler = async (filters: {
     fromDateTime: string;
     toDateTime: string;
     exactDateTime: string;
     isExactSearch: boolean;
   }) => {
-    const { fromDateTime, toDateTime, exactDateTime, isExactSearch } = filters;
-
-    if (!fromDateTime && !toDateTime && !exactDateTime && !isExactSearch) {
-      setAllData(data?.data)
+    if (!filters.fromDateTime && !filters.toDateTime && !filters.exactDateTime && !filters.isExactSearch) {
+      setTimeSearch({
+        fromDateTime:  '',
+        toDateTime: '',
+        exactDateTime: '',
+        isExactSearch: false,
+      });
       return;
     }
 
-  
-    const filteredData = (data?.data || []).filter((item:TrainDevice) => {
-      const localTime = moment(exactDateTime).format('YYYY-MM-DDTHH:mm');
-      const localDate = moment(item.lastDates?.lastConnect).local().format('YYYY-MM-DDTHH:mm');
-
-      if (isExactSearch && exactDateTime) {
-        return localDate === localTime; 
-      } else if (!isExactSearch && fromDateTime && toDateTime) {
-        return localDate >= fromDateTime && localDate <= toDateTime;
+      if (filters.isExactSearch && filters.exactDateTime) {
+        setTimeSearch({
+          ...timeSearch,
+          exactDateTime:  filters.exactDateTime,
+        });
+        return;
+      } else if (!filters.isExactSearch && filters.fromDateTime && filters.toDateTime) {
+        setTimeSearch({
+          ...timeSearch,
+          fromDateTime:  filters.fromDateTime,
+          toDateTime: filters.toDateTime,
+        });
+        return;
       }
-      return true; 
-    });
-
-    setAllData(filteredData);
   };
 
   return (

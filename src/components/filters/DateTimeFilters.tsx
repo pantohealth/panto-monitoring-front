@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { useFilterStore } from '../../store/filters';
 
 interface DateTimeFiltersProps {
-  onExport: () => void;
+  onExport?: () => void;
   onExportExcel?: () => void;
   onSearch?: (filters: {
     fromDateTime: string;
@@ -139,13 +139,16 @@ export function DateTimeFilters({ onExport, onExportExcel, onSearch }: DateTimeF
               Search
             </Button>
           )}
-          <Button
+          {onExport && (
+            <Button
             variant="secondary"
             onClick={onExport}
           >
             <Download className="w-4 h-4 mr-2" />
             PDF
           </Button>
+          )}
+          
           {onExportExcel && (
             <Button
               variant="secondary"

@@ -18,8 +18,8 @@ import { ProtectedRoute } from './ProtectedRoute';
 import { LoginPage } from '../pages/Login';
 
 import { useAuthStore } from '../store/auth';
-import { Points } from '../pages/PointsVsPop';
 import { useEffect } from 'react';
+import { CountCharts } from '../pages/CountCharts';
 
 
 export function AppRoutes() {
@@ -39,12 +39,12 @@ export function AppRoutes() {
         <Route index element={<Navigate to="/dashboard/users" />} />
         <Route path="users" element={<UsersPage />} />
         <Route path="devices/devices" element={<DevicesPage />} />
-        <Route path="devices/point-vs-pop" element={<Points />} />
+        <Route path="devices/train-device" element={<TrainDevicePage />} />
+        <Route path="devices/server-log" element={<ServerLogPage />} />
+        <Route path="devices/smart-device-report" element={<CountCharts />} />
         <Route path="company" element={<CompanyPage />} />
         <Route path="health" element={<HealthPage />} />
-        <Route path="widgets/server-log" element={<ServerLogPage />} />
         <Route path="widgets/system-log" element={<SystemLogPage />} />
-        <Route path="widgets/train-device" element={<TrainDevicePage />} />
         <Route path="admin/bugs" element={<CustomerBugsPage />} />
         <Route path="admin/simulations" element={<SimulationRequestsPage />} />
         <Route path="admin/data" element={<DataManagementPage />} />

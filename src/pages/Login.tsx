@@ -43,7 +43,9 @@ export function LoginPage() {
       
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || 'Failed to login. Please try again.');
+      toast.error(error.response?.data?.error || 
+        error?.response?.data.message 
+        ||'Failed to login. Please try again.');
     },
   });
 

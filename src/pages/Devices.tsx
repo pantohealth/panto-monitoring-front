@@ -8,7 +8,7 @@ import { AllDevices } from '../api/allDevices';
 import { DEVICE_STATUS, DEVICES } from '../types/devices';
 
 
-const COLUMNS = ['Device', 'Normal', 'Abnormal','Overlap', 'New Point'];
+const COLUMNS = ['Device', 'Normal', 'Abnormal','Overlap', 'New Points', 'Total Events'];
 
 export function DevicesPage() {
 
@@ -112,7 +112,8 @@ export function DevicesPage() {
                   <td className="px-6 py-4 whitespace-nowrap">{device?.eventStatusCounts?.normal || '~'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{device?.eventStatusCounts?.abnormal || '~'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{device?.eventStatusCounts?.overlap || '~'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{'~'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{device?.newPoints || '~'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{device?.totalEvents || '~'}</td>
                 </tr>
               ))}
             </tbody>
